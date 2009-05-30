@@ -21,6 +21,12 @@ class TestModule(unittest.TestCase):
         self.assert_('__main__' in code)
         self.assert_('    pass' in code)
         
+    def testContent(self):
+        p = Module()
+        p.content.append("a")
+        
+        self.gen.generate(p)
+        self.assert_('a' in self.gen.get_code())
 
 class TestForLoop(unittest.TestCase):
     def setUp(self):
@@ -65,6 +71,17 @@ class TestIfStatement(unittest.TestCase):
         self.assert_("pass" in code)
         self.assert_("else:" in code)
 
+class TestFunction(unittest.TestCase):
+    def setUp(self):
+        self.gen = CodeGenerator()
+
+    def testEmptyFunction(self):
+        n = Function("test")
+        self.gen.generate(n)
+        
+        code = self.gen.get_code()
+        self.assert_("def test" in code)
+        self.assert_("pass" in code)
 
 class TestCodeGenerator(unittest.TestCase):
 
@@ -83,6 +100,14 @@ class TestCodeGenerator(unittest.TestCase):
     def testCodeFunction(self):
         self.gen.code(4, 'a')
         self.assertEqual(self.gen.get_code(), ('    '*4) + 'a')
+        
+    def testStatement(self):
+        class TestStatement(Statement):
+            def get(self):
+                return "a"
+            
+        self.gen.generate(TestStatement())
+        self.assert_("a" in self.gen.get_code())
         
 #    def testListStrDispatch(self):
 #        node = ['a' for i in xrange(4)]

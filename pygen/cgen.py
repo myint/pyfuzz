@@ -3,7 +3,7 @@ import dispatch
 class CodeGenException(Exception):
     pass
 
-class CodeGenIdentException(CodeGenException):
+class CodeGenIndentException(CodeGenException):
     pass
 
 class Module(object):
@@ -27,9 +27,22 @@ class IfStatement(object):
         self.clause = clause
         self.true_content = true_content
         self.false_content = false_content
+
+class Function(object):
+    def __init__(self, name, args=[], content=[]):
+        self.name = name
+        self.args = args
+        self.content = content
         
+class CallStatement(object):
+    def __init__(self, func, args=[]):
+        self.func = func
+        self.args = args
+        
+class Statement(object):
+    pass
+
 class CodeGenerator(object):
-    
     def __init__(self):
         self.code_lines = []
 
@@ -59,6 +72,10 @@ class CodeGenerator(object):
             if isinstance(node, str):
                 self.code(depth+1, node)
                 continue
+            if callable(node):
+                self.code(depth+1, node())
+                continue
+            
             self.visit(depth+1, node)
 
 #    def visit_list(self, depth, node):
@@ -72,10 +89,20 @@ class CodeGenerator(object):
         pass
         
        
+    @visit.when(Statement)
+    def visit(self, depth, node):
+        self.code(depth, node.get())
+       
     @visit.when(Module)
     def visit(self, depth, node):
         if depth != 0:
-            raise CodeGenIdentException()
+            raise CodeGenIndentException()
+    
+        for n in node.content:
+            if isinstance(n, str):
+                self.code(depth, n)
+                continue
+            self.visit(depth, n)
     
         if node.has_main:
             self.code(depth, 'if __name__ == "__main__":')
@@ -97,10 +124,21 @@ class CodeGenerator(object):
         self.visit_block(depth, node.false_content)
         
 
+    @visit.when(Function)
+    def visit(self, depth, node):
+        args = ", ".join(node.args)
+        fun = "".join(['def ', node.name, '(', args, '):'])
+        self.code(depth, fun)
+        self.visit_block(depth, node.content)
 
 
-
-
+    @visit.when(CallStatement)
+    def visit(self, depth, node):
+        args = ", ".join(node.args)
+        fun = "".join([node.func.name, '(', args, ')'])
+        self.code(depth, fun)
+        
+        
 
 
     
