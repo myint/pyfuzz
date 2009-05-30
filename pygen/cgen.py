@@ -22,6 +22,12 @@ class ForLoop(object):
         self.content = content
         
         
+class IfStatement(object):
+    def __init__(self, clause, true_content = [], false_content = []):
+        self.clause = clause
+        self.true_content = true_content
+        self.false_content = false_content
+        
 class CodeGenerator(object):
     
     def __init__(self):
@@ -38,6 +44,8 @@ class CodeGenerator(object):
         code = []
         for i in xrange(depth):
             code.append('    ')
+        if isinstance(line, list):
+            line = "".join(line)
         code.append(line)
         
         self.code_lines.append("".join(code))
@@ -48,6 +56,9 @@ class CodeGenerator(object):
             return
         
         for node in block:
+            if isinstance(node, str):
+                self.code(depth+1, node)
+                continue
             self.visit(depth+1, node)
 
 #    def visit_list(self, depth, node):
@@ -78,7 +89,13 @@ class CodeGenerator(object):
         self.visit_block(depth, node.content)
 
 
-
+    @visit.when(IfStatement)
+    def visit(self, depth, node):
+        self.code(depth, ["if ", node.clause, ":"])
+        self.visit_block(depth, node.true_content)
+        self.code(depth, "else:")
+        self.visit_block(depth, node.false_content)
+        
 
 
 

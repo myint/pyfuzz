@@ -36,7 +36,34 @@ class TestForLoop(unittest.TestCase):
         self.assert_("    pass" in code)
 
     
+    def testStringForLoop(self):
+        n = ForLoop("i", "xrange(10)", ['pass'])
+        self.gen.generate(n)
         
+        code = self.gen.get_code()
+        self.assert_("for i" in code)
+        self.assert_("xrange(10):" in code)
+        self.assert_("    pass" in code)
+
+class TestIfStatement(unittest.TestCase):
+    def setUp(self):
+        self.gen = CodeGenerator()
+
+    def testEmptyIfStatement(self):
+        n = IfStatement("i", [])
+        self.gen.generate(n)
+        
+        code = self.gen.get_code()
+        self.assert_("if i:" in code)
+        self.assert_("pass" in code)
+
+        n = IfStatement("i", [], [])
+        self.gen.generate(n)
+        
+        code = self.gen.get_code()
+        self.assert_("if i:" in code)
+        self.assert_("pass" in code)
+        self.assert_("else:" in code)
 
 
 class TestCodeGenerator(unittest.TestCase):
