@@ -95,6 +95,44 @@ class TestFunction(unittest.TestCase):
         self.assert_("pass" in code)
 
 
+    def testFunction(self):
+        class TestStatement(Statement):
+            def get(self):
+                return "TestStatement"
+            def fix(self):
+                return self.get()
+
+        def CallableStatement():
+            return "CallableStatement"
+        
+        n = Function("test")
+        n.content.append(TestStatement())
+        n.content.append("StringStatement")
+        n.content.append(CallableStatement)
+
+        self.gen.generate(n)
+        code = self.gen.get_code()
+
+        self.assert_("def test" in code)
+        self.assert_("pass" not in code)
+        
+        self.assert_("TestStatement" in code)
+        self.assert_("StringStatement" in code)
+        self.assert_("CallableStatement" in code)
+
+        # Now fix all statements
+        
+        n = self.fix.generate(n)
+        self.gen.generate(n)
+        code = self.gen.get_code()
+        
+        self.assert_("def test" in code)
+        self.assert_("pass" not in code)
+        
+        self.assert_("TestStatement" in code)
+        self.assert_("StringStatement" in code)
+        self.assert_("CallableStatement" in code)
+
 class TestCallStatement(unittest.TestCase):
     def setUp(self):
         self.gen = CodeGenerator()

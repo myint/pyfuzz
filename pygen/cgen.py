@@ -53,7 +53,7 @@ class FixGenerator(object):
             if isinstance(stmt, str):
                 fixed.append(stmt)
                 continue
-            if callable(node):
+            if callable(stmt):
                 fixed.append(stmt())
                 continue
             
