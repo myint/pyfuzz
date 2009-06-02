@@ -6,15 +6,18 @@ class TestModule(unittest.TestCase):
 
     def setUp(self):
         self.gen = CodeGenerator()
+        self.fix = FixGenerator()
 
     def testEmptyModule(self):
         p = Module()
+        p = self.fix.visit(p)
         self.gen.generate(p)
         
         self.assertEqual(self.gen.get_code(), '')
         
     def testEmptyMainModule(self):
         p = Module(main=True)
+        p = self.fix.generate(p)
         self.gen.generate(p)
         
         code = self.gen.get_code()
@@ -31,9 +34,11 @@ class TestModule(unittest.TestCase):
 class TestForLoop(unittest.TestCase):
     def setUp(self):
         self.gen = CodeGenerator()
+        self.fix = FixGenerator()
 
     def testEmptyForLoop(self):
         n = ForLoop("i", "xrange(10)", [])
+        n = self.fix.generate(n)
         self.gen.generate(n)
         
         code = self.gen.get_code()
@@ -44,6 +49,7 @@ class TestForLoop(unittest.TestCase):
     
     def testStringForLoop(self):
         n = ForLoop("i", "xrange(10)", ['pass'])
+        n = self.fix.generate(n)
         self.gen.generate(n)
         
         code = self.gen.get_code()
@@ -54,9 +60,11 @@ class TestForLoop(unittest.TestCase):
 class TestIfStatement(unittest.TestCase):
     def setUp(self):
         self.gen = CodeGenerator()
+        self.fix = FixGenerator()
 
     def testEmptyIfStatement(self):
         n = IfStatement("i", [])
+        n = self.fix.generate(n)
         self.gen.generate(n)
         
         code = self.gen.get_code()
@@ -64,6 +72,7 @@ class TestIfStatement(unittest.TestCase):
         self.assert_("pass" in code)
 
         n = IfStatement("i", [], [])
+        n = self.fix.generate(n)
         self.gen.generate(n)
         
         code = self.gen.get_code()
@@ -74,15 +83,57 @@ class TestIfStatement(unittest.TestCase):
 class TestFunction(unittest.TestCase):
     def setUp(self):
         self.gen = CodeGenerator()
+        self.fix = FixGenerator()
 
     def testEmptyFunction(self):
         n = Function("test")
+        n = self.fix.generate(n)
         self.gen.generate(n)
         
         code = self.gen.get_code()
         self.assert_("def test" in code)
         self.assert_("pass" in code)
 
+
+class TestCallStatement(unittest.TestCase):
+    def setUp(self):
+        self.gen = CodeGenerator()
+        self.fix = FixGenerator()
+
+    def testCallStatement(self):
+        func = Function("test")
+        n = CallStatement(func, ['arg1', 'arg2'])
+        n = self.fix.generate(n)
+        self.gen.generate(n)
+        code = self.gen.get_code()
+        
+        self.assert_("test" in code)
+        self.assert_("(arg1, arg2)" in code)
+
+
+class TestFixGenerator(unittest.TestCase):
+    def setUp(self):
+        self.gen = FixGenerator()
+        
+    def testEmptyGenerator(self):
+        try:
+            self.gen.generate(None)
+            self.fail()
+        except:
+            pass
+
+    def testStatement(self):
+        class TestStatement(Statement):
+            def get(self):
+                return "a"
+            def fix(self):
+                return "a"
+            
+        fixed = self.gen.visit(TestStatement())
+        self.assertEqual(fixed, "a")
+
+
+    
 class TestCodeGenerator(unittest.TestCase):
 
     def setUp(self):

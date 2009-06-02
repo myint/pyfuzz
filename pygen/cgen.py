@@ -42,6 +42,86 @@ class CallStatement(object):
 class Statement(object):
     pass
 
+
+class FixGenerator(object):
+    def __init__(self):
+        pass
+    
+    def visit_block(self, block):
+        fixed = []
+        for stmt in block:
+            if isinstance(stmt, str):
+                fixed.append(stmt)
+                continue
+            if callable(node):
+                fixed.append(stmt())
+                continue
+            
+            fixed.append(self.visit(stmt))
+        return fixed
+    
+    def visit_args(self, args):
+        fixed = []
+        for arg in args:
+            if isinstance(arg, str):
+                fixed.append(arg)
+                continue
+            if callable(arg):
+                fixed.append(arg())
+                continue
+         
+            raise CodeGenException()
+        return fixed
+    
+    def generate(self, node):
+        return self.visit(node)
+    
+    @dispatch.on('node')
+    def visit(self, node):
+        pass
+    
+    @visit.when(Module)
+    def visit(self, node):
+        m = Module(node.has_main)
+        m.content = self.visit_block(node.content)
+        m.main_body = self.visit_block(node.main_body)
+        
+        return m
+
+    @visit.when(Statement)
+    def visit(self, node):
+        return node.fix()
+    
+    @visit.when(CallStatement)
+    def visit(self, node):
+        stmt = CallStatement(node.func, 
+                    self.visit_args(node.args))
+        
+        return stmt 
+
+    @visit.when(Function)
+    def visit(self, node):
+        func = Function(node.name)
+        func.args = self.visit_args(node.args)
+        func.content = self.visit_block(func.content)
+        
+        return func
+
+    @visit.when(IfStatement)
+    def visit(self, node):
+        stmt = IfStatement(node.clause)
+        stmt.true_content = self.visit_block(node.true_content)
+        stmt.false_content = self.visit_block(node.false_content)
+        
+        return stmt
+        
+    @visit.when(ForLoop)
+    def visit(self, node):
+        stmt = ForLoop(node.pointer, node.iterable, 
+                       self.visit_block(node.content))
+        
+        return stmt
+
 class CodeGenerator(object):
     def __init__(self):
         self.code_lines = []
