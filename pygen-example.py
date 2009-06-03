@@ -18,28 +18,30 @@ def _main():
     
     mod = Module(main = True)
     
-    f = FunWithArith(variables, literals, rng).gen("test_funwitharith", 10, 10)
+    f = FunWithArith(variables, literals, rng).gen("test_funwitharith", 50, 10)
 
     mod.content.append(f)
-#    mod.content.append(Function("test", ["x", "i"], [ 
-#             
-#            IfStatement("i > x", 
-#                            [agen.gen('x += %s', literals)], 
-#                            [agen.gen('x -= %s', literals)]),
-#             agen.gen('x += %s', literals),
-#             CallStatement(f, ["x", "i"]), 
-#             "return x"
-#             
-#            ]))
+    mod.content.append(Function("test", ["x", "i"], [ 
+             
+            IfStatement("i > x", 
+                            [agen.gen('x += %s', literals)], 
+                            [agen.gen('x -= %s', literals)]),
+             agen.gen('x += %s', literals),
+             "x = \\",
+             CallStatement(f, ["x", "i"]), 
+             "return x"
+             
+            ]))
 
-    mod.content += FunWithFunctions(variables, literals, rng).gen([f], "func", 100)
+#    mod.content += FunWithFunctions(variables, literals, rng).gen([f], "func", 100)
     
 
     #mod.main_body.append("x = 5")
     mod.main_body.append(
-        ForLoop('i', 'xrange(10)',
+        ForLoop('i', 'xrange(2000)',
               ["x = 5",
 #               "x = test(x, i)",
+                "x = \\",
                 CallStatement(mod.content[-1], variables),
                "print x"]                   
                 )
@@ -49,16 +51,17 @@ def _main():
     
 def dotest(mod):
     gen = CodeGenerator()
-    
+    fix = FixGenerator() 
     totaltime = 0.0
     time_test = 0.0
     time_base = 0.0
     
-    for i in xrange(100):
+    for i in xrange(100000):
         
         clock = time.time()
-            
-        gen.generate(mod)
+        
+        fixed = fix.generate(mod)
+        gen.generate(fixed)
         code = gen.get_code()
  
         with open("code.py", "w") as code_file:
@@ -86,17 +89,21 @@ def dotest(mod):
             print "------- Encountered crash: Base -------"
             print code
             
-        if clock_test < clock_base/2.0:
-            print "------- Fast test -------"
-            print "Test", clock_test
-            print "Base", clock_base
-            print code
+#        if clock_test < clock_base/2.0:
+#            print "------- Fast test -------"
+#            print "Test", clock_test
+#            print "Base", clock_base
+##            print code
+#
+#        if clock_test > clock_base*2.0:
+#            print "------- Fast base -------"
+#            print "Test", clock_test
+#            print "Base", clock_base
+##            print code
 
-        if clock_test > clock_base*2.0:
-            print "------- Fast base -------"
-            print "Test", clock_test
-            print "Base", clock_base
-            print code
+        if stdout_base != stdout_test:
+            print "Test", stdout_test
+            print "Base", stdout_base
 
         
 #        if clock > 10.0:
@@ -104,7 +111,7 @@ def dotest(mod):
         
         if (i+1) % 10 == 0:
             print "%f Functions per Second" % ((i+1)/totaltime,)
-            print "Test: %f | Base: %f" % ((i+1)/time_test, (i+1)/time_base)
+            print "Test: %f calls/sec | Base: %f calls/sec" % ((i+1)/time_test, (i+1)/time_base)
             
         
         
