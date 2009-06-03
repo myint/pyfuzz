@@ -127,6 +127,11 @@ class FixGenerator(object):
                        self.visit_block(node.content))
         
         return stmt
+    
+    @visit.when(Assignment)
+    def visit(self, node):
+        stmt = Assignment(node.target, node.operator, self.visit_block(node.expression))
+        return stmt
 
 class CodeGenerator(object):
     def __init__(self):
@@ -162,11 +167,6 @@ class CodeGenerator(object):
             content += self.visit(depth+1, node)
         return content
 
-#    def visit_list(self, depth, node):
-#        for line in node:
-#            self.code(depth, line)
-
-    
     @dispatch.on('node')
     def visit(self, depth, node):
         '''Generic visit function'''
@@ -226,3 +226,9 @@ class CodeGenerator(object):
         fun = "".join([node.func.name, '(', args, ')'])
         return [self.code(depth, fun)]
 
+    @visit.when(Assignment)
+    def visit(self, depth, node):
+        code = [node.target, node.operator]
+        if(len(node.expression) > 0):
+            code += map(lambda x: x.strip(), self.visit_block(0, node.expression))
+        return [self.code(depth, " ".join(code))]

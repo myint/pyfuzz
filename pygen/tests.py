@@ -158,7 +158,26 @@ class TestCallStatement(unittest.TestCase):
         self.assert_("test" in code)
         self.assert_("(arg1, arg2)" in code)
 
+class TestAssignment(unittest.TestCase):
+    def setUp(self):
+        self.gen = CodeGenerator()
+        self.fix = FixGenerator()
 
+    def testAssignment(self):
+        def CallableStatement():
+            return "CallableStatement"
+        
+        n = Assignment("target", "=", [CallableStatement])
+        
+        code = self.gen.generate(n)
+        
+        self.assert_("target = CallableStatement" in code)
+        
+        n = self.fix.generate(n)
+        code = self.gen.generate(n)
+        
+        self.assert_("target = CallableStatement" in code)
+        
 class TestFixGenerator(unittest.TestCase):
     def setUp(self):
         self.gen = FixGenerator()
@@ -203,12 +222,6 @@ class TestCodeGenerator(unittest.TestCase):
                 return "a"
             
         self.assert_("a" in self.gen.generate(TestStatement()))
-        
-#    def testListStrDispatch(self):
-#        node = ['a' for i in xrange(4)]
-#        self.gen.generate(node)
-#        
-#        self.assertEqual(len(self.gen.code_lines), 4)
         
 
 if __name__ == "__main__":
