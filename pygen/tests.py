@@ -28,8 +28,17 @@ class TestModule(unittest.TestCase):
         p = Module()
         p.content.append("a")
         
+        p = self.fix.generate(p)
         self.gen.generate(p)
         self.assert_('a' in self.gen.get_code())
+
+    def testContentExtended(self):
+        p = Module()
+        p.content.append(Function("function"))
+        
+        p = self.fix.generate(p)
+        self.gen.generate(p)
+        self.assert_('function' in self.gen.get_code())
 
 class TestForLoop(unittest.TestCase):
     def setUp(self):

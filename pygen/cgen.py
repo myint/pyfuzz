@@ -103,7 +103,7 @@ class FixGenerator(object):
     def visit(self, node):
         func = Function(node.name)
         func.args = self.visit_args(node.args)
-        func.content = self.visit_block(func.content)
+        func.content = self.visit_block(node.content)
         
         return func
 
