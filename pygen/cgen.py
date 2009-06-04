@@ -16,31 +16,49 @@ class Module(object):
         
 
 class ForLoop(object):
-    def __init__(self, pointer, iterable, content):
+    def __init__(self, pointer, iterable, content = None):
         self.pointer = pointer
         self.iterable = iterable
-        self.content = content
+        if content != None:
+            self.content = content
+        else:
+            self.content = []
         
         
 class IfStatement(object):
-    def __init__(self, clause, true_content = [], false_content = []):
+    def __init__(self, clause, true_content = None, false_content = None):
         self.clause = clause
-        self.true_content = true_content
-        self.false_content = false_content
+        if true_content != None:
+            self.true_content = true_content
+        else:
+            self.true_content = []
+
+        if false_content != None:
+            self.false_content = false_content
+        else:
+            self.false_content = []
 
 class Function(object):
-    def __init__(self, name, args=[], content=[]):
+    def __init__(self, name, args = None, content = None):
         self.name = name
-        self.args = args
-        self.content = content
+
+        if args != None:
+            self.args = args
+        else:
+            self.args = []
+
+        if content != None:
+            self.content = content
+        else:
+            self.content = []
         
 class CallStatement(object):
-    def __init__(self, func, args=[]):
+    def __init__(self, func, args):
         self.func = func
         self.args = args
 
 class Assignment(object):
-    def __init__(self, target, operator='=', expression=[]):
+    def __init__(self, target, operator, expression):
         self.target = target
         self.operator = operator
         self.expression = expression
