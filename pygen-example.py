@@ -1,55 +1,24 @@
 from pygen.cgen import *
-from arithgen import ArithGen, IntegerGen
-from fungen import FunWithArith, FunWithFunctions
+
+
+from pgen import *
 
 import subprocess
 import time
 
 import random
 
+import logging
+import logging.config
+
+log = logging.getLogger("pygen")
+
 def _main():
 
     rng = random.Random()
-    rng.seed(1)
-
-    agen = ArithGen(10, rng)
-    variables = ['x', 'i']
-    literals = ['x', 'i', IntegerGen(-1000, 1000, rng), IntegerGen(-2**31, 2**31, rng)] #IntegerGen(-2**31, 2**31)
     
-    mod = Module(main = True)
+    pgen = ProgGenerator(pgen_opts, rng)
     
-    f = FunWithArith(variables, literals, rng).gen("test_funwitharith", 50, 10)
-
-    mod.content.append(f)
-    mod.content.append(Function("test", ["x", "i"], [ 
-             
-            IfStatement("i > x", 
-                            [agen.gen('x += %s', literals)], 
-                            [agen.gen('x -= %s', literals)]),
-             agen.gen('x += %s', literals),
-             "x = \\",
-             CallStatement(f, ["x", "i"]), 
-             "return x"
-             
-            ]))
-
-#    mod.content += FunWithFunctions(variables, literals, rng).gen([f], "func", 100)
-    
-
-    #mod.main_body.append("x = 5")
-    mod.main_body.append(
-        ForLoop('i', 'xrange(2000)',
-              ["x = 5",
-#               "x = test(x, i)",
-                "x = \\",
-                CallStatement(mod.content[-1], variables),
-               "print x"]                   
-                )
-        )
-    
-    dotest(mod)
-    
-def dotest(mod):
     gen = CodeGenerator()
     fix = FixGenerator() 
     totaltime = 0.0
@@ -59,10 +28,10 @@ def dotest(mod):
     for i in xrange(100000):
         
         clock = time.time()
-        
+        mod = pgen.generate()
         fixed = fix.generate(mod)
-        gen.generate(fixed)
-        code = gen.get_code()
+        
+        code = gen.generate(fixed)
  
         with open("code.py", "w") as code_file:
             code_file.write(code)
@@ -84,10 +53,13 @@ def dotest(mod):
         if p_test.returncode == -11:
             print "------- Encountered crash: Test -------"
             print code
+            print "---------------------------------------"
+
 
         if p_base.returncode == -11:
             print "------- Encountered crash: Base -------"
             print code
+            print "---------------------------------------"
             
 #        if clock_test < clock_base/2.0:
 #            print "------- Fast test -------"
@@ -102,8 +74,13 @@ def dotest(mod):
 ##            print code
 
         if stdout_base != stdout_test:
-            print "Test", stdout_test
-            print "Base", stdout_base
+            print "------- Encountered different result --------"
+            print "Test %s" % (stdout_test, )
+            print "---------------------------------------"
+            print "Base %s" % (stdout_base, )
+            print "---------------------------------------"
+            print code
+            print "---------------------------------------"
 
         
 #        if clock > 10.0:

@@ -1,10 +1,7 @@
 
 class IntegerGen(object):
-    def __init__(self, min_range, max_range, rng):
+    def __init__(self, min_range, max_range, rng = None):
         self.rng = rng
-        if self.rng == None:
-            import random
-            self.rng = random.Random()
 
         self.min_range = min_range
         self.max_range = max_range
@@ -12,8 +9,14 @@ class IntegerGen(object):
     def __call__(self):
         return str(self.rng.randrange(self.min_range, self.max_range))
 
-def gen_max_int_gen(rng):
-    return IntegerGen(-2**31, 2**31, rng)
+    def set_rng(self, rng):
+        self.rng = rng
+        return self
+        
+
+
+def gen_max_int_gen():
+    return IntegerGen(-2**31, 2**31)
 
 class ArithGen(object):
     
