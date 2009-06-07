@@ -9,9 +9,11 @@ pgen_opts = {
                 "max_children" : 5,
                 "numbers" : [gen_max_int_gen(), IntegerGen(-1000, 1000)],
                 "type" : [(1.0, "thin"), (1.0, "fat")],
+                "if" : 0.10,
                },
     "loop_integer" : {
                 "numbers" : [IntegerGen(-10, 10)],
+                "if" : 0.10,
                },
     "tuple" : {},
 
@@ -125,20 +127,48 @@ class ProgGenerator(object):
         if branch_type == "thin":
             gen = ArithGen(2, self.rng)
             for i in xrange(self.rng.randint(10,25)):
-                result = self.next_variable()
+                if opts["if"] > self.rng.random():
+                    result = self.next_variable()
+                    
+                    exp1 = gen.generate(list(literals) + numbers)
+                    exp2 = gen.generate(list(literals) + numbers)
+                    
+                    clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals))
+                    
+                    i = IfStatement(clause, 
+                            [Assignment(result, '=', [exp1])],
+                            [Assignment(result, '=', [exp2])])
+                    f.content.append(i)
 
-                exp = gen.generate(list(literals) + numbers)
-                f.content.append(Assignment(result, '=', [exp]))
-                literals.add(result)
+                else:
+                    result = self.next_variable()
+    
+                    exp = gen.generate(list(literals) + numbers)
+                    f.content.append(Assignment(result, '=', [exp]))
+                    literals.add(result)
                 
         if branch_type == "fat":
             gen = ArithGen(20, self.rng)
             for i in xrange(self.rng.randint(0,5)):
-                result = self.next_variable()
+                if opts["if"] > self.rng.random():
+                    result = self.next_variable()
+                    
+                    exp1 = gen.generate(list(literals) + numbers)
+                    exp2 = gen.generate(list(literals) + numbers)
+                    
+                    clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals))
+                    
+                    i = IfStatement(clause, 
+                            [Assignment(result, '=', [exp1])],
+                            [Assignment(result, '=', [exp2])])
+                    f.content.append(i)
 
-                exp = gen.generate(list(literals) + numbers)
-                f.content.append(Assignment(result, '=', [exp]))
-                literals.add(result)
+                else:
+                    result = self.next_variable()
+    
+                    exp = gen.generate(list(literals) + numbers)
+                    f.content.append(Assignment(result, '=', [exp]))
+                    literals.add(result)
       
         exp = ArithGen(10, self.rng).generate(list(literals) + numbers)
         f.content.append(Assignment('result', '=', [exp]))
@@ -164,8 +194,25 @@ class ProgGenerator(object):
         literals.add(loop_var)
         iter = "xrange(50)"
         l = ForLoop(loop_var, iter)
-        exp = ArithGen(1, self.rng).generate(list(literals) + numbers)
-        l.content.append(Assignment(result, '+=', [exp]))
+        
+        if opts["if"] > self.rng.random():
+            exp1 = ArithGen(1, self.rng).generate(list(literals) + numbers)
+            exp2 = ArithGen(1, self.rng).generate(list(literals) + numbers)
+            
+            clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals)) 
+            
+            i = IfStatement(clause, 
+                            [Assignment(result, '+=', [exp1])],
+                            [Assignment(result, '+=', [exp2])])
+            l.content.append(i)
+            
+        else:
+            exp = ArithGen(1, self.rng).generate(list(literals) + numbers)
+            l.content.append(Assignment(result, '+=', [exp]))
+            
+        
+        
+        
         
         f.content.append(Assignment(result, '=', ['0']))
         f.content.append(l)
