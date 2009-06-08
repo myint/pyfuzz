@@ -1,12 +1,14 @@
 from pgen import *
 import random
 
-pgen = ProgGenerator(pgen_opts, random.Random())
 
-m = pgen.generate()
+if __name__ == "__main__":
+    pgen = ProgGenerator(pgen_opts, random.Random())
 
-from pygen.cgen import CodeGenerator
+    m = pgen.generate()
 
-cgen = CodeGenerator()
+    from pygen.cgen import CodeGenerator
 
-print cgen.generate(m)
+    cgen = CodeGenerator()
+
+    print cgen.generate(m)
