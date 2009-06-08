@@ -22,73 +22,100 @@ pgen_opts = {
 from pygen.cgen import *
 from arithgen import ArithGen
 
-class ProgGenerator(object):
-    def __init__(self, opts, rng):
-        self.opts = opts
-        self.module = None
-        self.rng = rng
+def eval_branches(rng, branches):
+    total = sum((x[0] for x in branches))
+    val = rng.random() * total
 
-    def eval_branches(self, branches):
-        total = sum((x[0] for x in branches))
-        val = self.rng.random() * total
+    for chance, result in branches:
+        if val < chance:
+            return result
+        else:
+            val -= chance
+    return None
 
-        for chance, result in branches:
-            if val < chance:
-                return result
-            else:
-                val -= chance
+class FunctionGenerator(object):
+    def generate_arguments(self, args_num):
+        args = ["arg" + str(i) for i in xrange(self.stats.arg_number, self.stats.arg_number + args_num)]
+        self.stats.arg_number += args_num
+        return args
 
     def next_variable(self):
-        nr = self.arg_number
-        self.arg_number += 1
+        nr = self.stats.arg_number
+        self.stats.arg_number += 1
         return "var%d" % (nr, )
 
-    def generate(self):
-        '''Instantiates a new module and fills it randomly'''
-        self.module = Module(main = True)
-        self.func_number = 1
-        self.arg_number = 1
-        lopts = self.opts["module"]
 
-        self.prog_size = lopts["prog_size"]
+class LoopIntegerGenerator(FunctionGenerator):
+    def __init__(self, module, stats, opts, rng):
+        self.opts = opts
+        self.module = module
+        self.rng = rng
+        self.stats = stats
 
-        main = []
-        self.module.main_body.append(
-            ForLoop('i', 'xrange(%d)' % (lopts["mainloop"],), main)
-        )
+    def loop_integer(self, opts, args_num, globals):
+        '''Insert a new function with a loop containing some integer operations'''
+        args = self.generate_arguments(args_num)
+ 
+        literals = set(args) | set(globals)
+        numbers = [n.set_rng(self.rng) for n in opts["numbers"]]
+        
+        f = Function("func%d" % (self.stats.func_number,), args, [])
+        self.stats.func_number += 1
 
-        if "children" in lopts:
-            branch = self.eval_branches(lopts["children"])
-            if branch == "arith_integer":
-                main.append(Assignment('x', '=', ['5']))
-                f = self.arith_integer(self.opts[branch], 2)
-                main.append(Assignment('x', '=', [CallStatement(f, ['x','i'])]))
-                main.append('print x,')
+        result = self.next_variable()
+        literals.add(result)
 
-                self.module.content.insert(0, f)
-            if branch == "arith_float":
-                main.append(Assignment('x', '=', ['5.0']))
-                main.append('print x,')
+        loop_var = self.next_variable()
+        literals.add(loop_var)
+        iter = "xrange(50)"
+        l = ForLoop(loop_var, iter)
+        
+        if opts["if"] > self.rng.random():
+            exp1 = ArithGen(1, self.rng).generate(list(literals) + numbers)
+            exp2 = ArithGen(1, self.rng).generate(list(literals) + numbers)
+            
+            clause = " ".join([self.rng.choice(list(literals)), "<", self.rng.choice(list(literals))])
+            
+            i = IfStatement(clause, 
+                            [Assignment(result, '+=', [exp1])],
+                            [Assignment(result, '+=', [exp2])])
+            l.content.append(i)
+            
+        else:
+            exp = ArithGen(1, self.rng).generate(list(literals) + numbers)
+            l.content.append(Assignment(result, '+=', [exp]))
+            
+       
+        f.content.append(Assignment(result, '=', ['0']))
+        f.content.append(l)
+        f.content.append("return " + result)
 
-        return self.module
+        return f
+
+class ArithIntegerGenerator(FunctionGenerator):
+    def __init__(self, module, stats, opts, rng):
+        self.opts = opts
+        self.module = module
+        self.rng = rng
+        self.stats = stats
 
     def arith_integer(self, opts, args_num, globals=[]):
         '''Insert a new arithmetic function using only integers'''
-        args = ["arg" + str(i) for i in xrange(self.arg_number, self.arg_number + args_num)]
-        self.arg_number += args_num
+        args = self.generate_arguments(args_num)
         
-        f = Function("func%d" % (self.func_number,), args, [])
-        self.func_number += 1
+        f = Function("func%d" % (self.stats.func_number,), args, [])
+        self.stats.func_number += 1
 
         literals = set(args) | set(globals)
 
-        children = min(self.rng.randint(0, opts["max_children"]), self.prog_size)
+        children = min(self.rng.randint(0, opts["max_children"]), self.stats.prog_size)
         if children > 0:
-            self.prog_size -= children
+            self.stats.prog_size -= children
             for i in xrange(children):
-                branch = self.eval_branches(opts["children"])
+                branch = eval_branches(self.rng, opts["children"])
                 if branch == "arith_integer":
-                    c = self.arith_integer(opts, 2)
+                    gen  = ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
+                    c = gen.arith_integer(opts, 2)
                     self.module.content.insert(0, c)
 
                     args = self.rng.sample(list(literals), 2)
@@ -100,7 +127,9 @@ class ProgGenerator(object):
 
 
                 if branch == ("arith_integer", "local"):
-                    c = self.arith_integer(opts, 2, list(literals))
+                    gen  = ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
+                    c = gen.arith_integer(opts, 2, list(literals))
+
                     f.content.append(c)
 
                     args = self.rng.sample(list(literals), 2)
@@ -111,7 +140,9 @@ class ProgGenerator(object):
                     literals.add(result)
                     
                 if branch == "loop_integer":
-                    c = self.loop_integer(self.opts['loop_integer'], 2, [])
+                    gen  = LoopIntegerGenerator(self.module, self.stats, self.opts, self.rng)
+
+                    c = gen.loop_integer(self.opts['loop_integer'], 2, [])
                     self.module.content.insert(0, c)
 
                     args = self.rng.sample(list(literals), 2)
@@ -123,7 +154,7 @@ class ProgGenerator(object):
 
 
         numbers = [n.set_rng(self.rng) for n in opts["numbers"]]
-        branch_type = self.eval_branches(opts["type"])
+        branch_type = eval_branches(self.rng, opts["type"])
         if branch_type == "thin":
             gen = ArithGen(2, self.rng)
             for i in xrange(self.rng.randint(10,25)):
@@ -175,48 +206,59 @@ class ProgGenerator(object):
         f.content.append('return result')
 
         return f
+ 
+
+class ProgGenerator(object):
+    def __init__(self, opts, rng):
+        self.opts = opts
+        self.module = None
+        self.rng = rng
+
+    def next_variable(self):
+        nr = self.arg_number
+        self.arg_number += 1
+        return "var%d" % (nr, )
+
+    def generate(self):
+        '''Instantiates a new module and fills it randomly'''
+        self.module = Module(main = True)
+        self.func_number = 1
+        self.arg_number = 1
+        lopts = self.opts["module"]
+
+        self.prog_size = lopts["prog_size"]
+
+        main = []
+        self.module.main_body.append(
+            ForLoop('i', 'xrange(%d)' % (lopts["mainloop"],), main)
+        )
+
+        if "children" in lopts:
+            branch = eval_branches(self.rng, lopts["children"])
+            if branch == "arith_integer":
+                main.append(Assignment('x', '=', ['5']))
+                f = self.arith_integer(self.opts[branch], 2)
+                main.append(Assignment('x', '=', [CallStatement(f, ['x','i'])]))
+                main.append('print x,')
+
+                self.module.content.insert(0, f)
+            if branch == "arith_float":
+                main.append(Assignment('x', '=', ['5.0']))
+                main.append('print x,')
+
+        return self.module
+
+    def arith_integer(self, opts, args_num, globals=[]):
+        '''Insert a new arithmetic function using only integers'''
+        gen = ArithIntegerGenerator(self.module, self, self.opts, self.rng)
+        f = gen.arith_integer(opts, args_num, globals)
+
+        return f
         
     def loop_integer(self, opts, args_num, globals):
         '''Insert a new function with a loop containing some integer operations'''
-        args = ["arg" + str(i) for i in xrange(self.arg_number, self.arg_number + args_num)]
-        self.arg_number += args_num
-
-        literals = set(args) | set(globals)
-        numbers = [n.set_rng(self.rng) for n in opts["numbers"]]
-        
-        f = Function("func%d" % (self.func_number,), args, [])
-        self.func_number += 1
-
-        result = self.next_variable()
-        literals.add(result)
-
-        loop_var = self.next_variable()
-        literals.add(loop_var)
-        iter = "xrange(50)"
-        l = ForLoop(loop_var, iter)
-        
-        if opts["if"] > self.rng.random():
-            exp1 = ArithGen(1, self.rng).generate(list(literals) + numbers)
-            exp2 = ArithGen(1, self.rng).generate(list(literals) + numbers)
-            
-            clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals)) 
-            
-            i = IfStatement(clause, 
-                            [Assignment(result, '+=', [exp1])],
-                            [Assignment(result, '+=', [exp2])])
-            l.content.append(i)
-            
-        else:
-            exp = ArithGen(1, self.rng).generate(list(literals) + numbers)
-            l.content.append(Assignment(result, '+=', [exp]))
-            
-        
-        
-        
-        
-        f.content.append(Assignment(result, '=', ['0']))
-        f.content.append(l)
-        f.content.append("return " + result)
+        gen = LoopIntegerGenerator(self.module, self, self.opts, self.rng)
+        f = gen.loop_integer(opts, args_num, globals)
 
         return f
 

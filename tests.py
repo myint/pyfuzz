@@ -1,0 +1,49 @@
+import unittest
+
+from pgen import *
+
+    
+class TestFunctionGenerator(unittest.TestCase):
+
+    def setUp(self):
+        pass
+ 
+    def testGenerateArguments(self):
+        class TestModule(object):
+            pass
+
+        module = TestModule()
+        module.arg_number = 0
+
+        fgen = FunctionGenerator()
+        fgen.stats = module
+
+        args = fgen.generate_arguments(5)
+           
+        self.assertEqual(len(args), 5)
+        self.assert_("arg0" in args)
+        self.assert_("arg4" in args)
+
+        self.assertEqual(module.arg_number, 5)
+
+    def testNextVariable(self):
+        class TestModule(object):
+            pass
+
+        module = TestModule()
+        module.arg_number = 0
+
+        fgen = FunctionGenerator()
+        fgen.stats = module
+
+        var = fgen.next_variable()
+        self.assertEqual("var0", var)
+        self.assertEqual(module.arg_number, 1)
+
+       
+
+if __name__ == "__main__":
+    #import sys;sys.argv = ['', 'Test.testName']
+    unittest.main()
+    
+    
