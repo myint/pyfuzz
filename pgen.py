@@ -14,6 +14,10 @@ pgen_opts = {
     "loop_integer" : {
                 "numbers" : [IntegerGen(-10, 10)],
                 "if" : 0.10,
+                "iterables" : [(1.0, "xrange"), (1.0, "range"), (1.0, "list_comp_small_int")],
+               },
+    "list_comp_small_int" : {
+                "numbers" : [IntegerGen(-10, 10)],
                },
     "tuple" : {},
 
@@ -49,6 +53,21 @@ class FunctionGenerator(object):
         self.stats.func_number += 1
         return f
 
+class ListComprehensionGenerator(FunctionGenerator):
+    def __init__(self, module, stats, opts, rng):
+        self.opts = opts
+        self.module = module
+        self.rng = rng
+        self.stats = stats
+
+    def get_generator(self, opts, literals):
+        literals = list(literals) + [n.set_rng(self.rng) for n in opts["numbers"]] + ["i"]
+        exp = ArithGen(1, self.rng).generate(literals)
+        return "(%s for i in xrange(50))" % (exp, )
+
+
+#    def get_list(self):
+#        pass
 
 class LoopIntegerGenerator(FunctionGenerator):
     def __init__(self, module, stats, opts, rng):
@@ -56,6 +75,18 @@ class LoopIntegerGenerator(FunctionGenerator):
         self.module = module
         self.rng = rng
         self.stats = stats
+
+    def get_iterable(self, opts, literals):
+        branch = eval_branches(self.rng, opts["iterables"])
+        if branch == "xrange":
+            return "xrange(50)"
+
+        if branch == "range":
+            return "range(50)"
+
+        if branch == "list_comp_small_int":
+            gen = ListComprehensionGenerator(self.module, self.stats, self.opts, self.rng)
+            return gen.get_generator(self.opts["list_comp_small_int"], literals)
 
     def loop_integer(self, opts, args_num, globals):
         '''Insert a new function with a loop containing some integer operations'''
@@ -69,9 +100,11 @@ class LoopIntegerGenerator(FunctionGenerator):
         result = self.next_variable()
         literals.add(result)
 
+        iter = self.get_iterable(opts, literals)
+
         loop_var = self.next_variable()
         literals.add(loop_var)
-        iter = "xrange(50)"
+
         l = ForLoop(loop_var, iter)
         
         if opts["if"] > self.rng.random():
