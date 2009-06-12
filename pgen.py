@@ -44,6 +44,11 @@ class FunctionGenerator(object):
         self.stats.arg_number += 1
         return "var%d" % (nr, )
 
+    def create_function(self, args):
+        f = Function("func%d" % (self.stats.func_number,), args, [])
+        self.stats.func_number += 1
+        return f
+
 
 class LoopIntegerGenerator(FunctionGenerator):
     def __init__(self, module, stats, opts, rng):
@@ -59,9 +64,8 @@ class LoopIntegerGenerator(FunctionGenerator):
         literals = set(args) | set(globals)
         numbers = [n.set_rng(self.rng) for n in opts["numbers"]]
         
-        f = Function("func%d" % (self.stats.func_number,), args, [])
-        self.stats.func_number += 1
-
+        f = self.create_function(args)
+ 
         result = self.next_variable()
         literals.add(result)
 
@@ -99,108 +103,95 @@ class ArithIntegerGenerator(FunctionGenerator):
         self.rng = rng
         self.stats = stats
 
+    def generate_statement(self, opts, f, gen, literals, numbers):
+        if opts["if"] > self.rng.random():
+            result = self.next_variable()
+                   
+            exp1 = gen.generate(list(literals) + numbers)
+            exp2 = gen.generate(list(literals) + numbers)
+                    
+            clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals))
+                   
+            i = IfStatement(clause, 
+                [Assignment(result, '=', [exp1])],
+                [Assignment(result, '=', [exp2])])
+            f.content.append(i)
+
+        else:
+            result = self.next_variable()
+    
+            exp = gen.generate(list(literals) + numbers)
+            f.content.append(Assignment(result, '=', [exp]))
+            literals.add(result)
+
+    def generate_child(self, opts, f, literals):
+        branch = eval_branches(self.rng, opts["children"])
+        if branch == "arith_integer":
+            gen  = ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
+            c = gen.arith_integer(opts, 2)
+            self.module.content.insert(0, c)
+
+            args = self.rng.sample(list(literals), 2)
+            result = self.next_variable()
+
+            call = Assignment(result, '=', [CallStatement(c, args)])
+            f.content.append(call)
+            literals.add(result)
+
+        if branch == ("arith_integer", "local"):
+            gen  = ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
+            c = gen.arith_integer(opts, 2, list(literals))
+
+            f.content.append(c)
+
+            args = self.rng.sample(list(literals), 2)
+            result = self.next_variable()
+
+            call = Assignment(result, '=', [CallStatement(c, args)])
+            f.content.append(call)
+            literals.add(result)
+                   
+        if branch == "loop_integer":
+            gen  = LoopIntegerGenerator(self.module, self.stats, self.opts, self.rng)
+
+            c = gen.loop_integer(self.opts['loop_integer'], 2, [])
+            self.module.content.insert(0, c)
+
+            args = self.rng.sample(list(literals), 2)
+            result = self.next_variable()
+
+            call = Assignment(result, '=', [CallStatement(c, args)])
+            f.content.append(call)
+            literals.add(result)
+
+
+
     def arith_integer(self, opts, args_num, globals=[]):
         '''Insert a new arithmetic function using only integers'''
         args = self.generate_arguments(args_num)
         
-        f = Function("func%d" % (self.stats.func_number,), args, [])
-        self.stats.func_number += 1
-
+        f = self.create_function(args)
+ 
         literals = set(args) | set(globals)
 
         children = min(self.rng.randint(0, opts["max_children"]), self.stats.prog_size)
         if children > 0:
             self.stats.prog_size -= children
             for i in xrange(children):
-                branch = eval_branches(self.rng, opts["children"])
-                if branch == "arith_integer":
-                    gen  = ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
-                    c = gen.arith_integer(opts, 2)
-                    self.module.content.insert(0, c)
-
-                    args = self.rng.sample(list(literals), 2)
-                    result = self.next_variable()
-
-                    call = Assignment(result, '=', [CallStatement(c, args)])
-                    f.content.append(call)
-                    literals.add(result)
-
-
-                if branch == ("arith_integer", "local"):
-                    gen  = ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
-                    c = gen.arith_integer(opts, 2, list(literals))
-
-                    f.content.append(c)
-
-                    args = self.rng.sample(list(literals), 2)
-                    result = self.next_variable()
-
-                    call = Assignment(result, '=', [CallStatement(c, args)])
-                    f.content.append(call)
-                    literals.add(result)
-                    
-                if branch == "loop_integer":
-                    gen  = LoopIntegerGenerator(self.module, self.stats, self.opts, self.rng)
-
-                    c = gen.loop_integer(self.opts['loop_integer'], 2, [])
-                    self.module.content.insert(0, c)
-
-                    args = self.rng.sample(list(literals), 2)
-                    result = self.next_variable()
-
-                    call = Assignment(result, '=', [CallStatement(c, args)])
-                    f.content.append(call)
-                    literals.add(result)
-
+                self.generate_child(opts, f, literals)
 
         numbers = [n.set_rng(self.rng) for n in opts["numbers"]]
         branch_type = eval_branches(self.rng, opts["type"])
         if branch_type == "thin":
             gen = ArithGen(2, self.rng)
             for i in xrange(self.rng.randint(10,25)):
-                if opts["if"] > self.rng.random():
-                    result = self.next_variable()
-                    
-                    exp1 = gen.generate(list(literals) + numbers)
-                    exp2 = gen.generate(list(literals) + numbers)
-                    
-                    clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals))
-                    
-                    i = IfStatement(clause, 
-                            [Assignment(result, '=', [exp1])],
-                            [Assignment(result, '=', [exp2])])
-                    f.content.append(i)
-
-                else:
-                    result = self.next_variable()
-    
-                    exp = gen.generate(list(literals) + numbers)
-                    f.content.append(Assignment(result, '=', [exp]))
-                    literals.add(result)
-                
+                self.generate_statement(opts, f, gen, literals, numbers)      
+               
         if branch_type == "fat":
             gen = ArithGen(20, self.rng)
             for i in xrange(self.rng.randint(0,5)):
-                if opts["if"] > self.rng.random():
-                    result = self.next_variable()
-                    
-                    exp1 = gen.generate(list(literals) + numbers)
-                    exp2 = gen.generate(list(literals) + numbers)
-                    
-                    clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals))
-                    
-                    i = IfStatement(clause, 
-                            [Assignment(result, '=', [exp1])],
-                            [Assignment(result, '=', [exp2])])
-                    f.content.append(i)
+                self.generate_statement(opts, f, gen, literals, numbers)
 
-                else:
-                    result = self.next_variable()
-    
-                    exp = gen.generate(list(literals) + numbers)
-                    f.content.append(Assignment(result, '=', [exp]))
-                    literals.add(result)
-      
         exp = ArithGen(10, self.rng).generate(list(literals) + numbers)
         f.content.append(Assignment('result', '=', [exp]))
         f.content.append('return result')
