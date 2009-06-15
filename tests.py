@@ -7,6 +7,21 @@ class TestFunctionGenerator(unittest.TestCase):
 
     def setUp(self):
         pass
+
+    def testCreateFunction(self):
+        class TestModule(object):
+            pass
+
+        module = TestModule()
+        module.func_number = 0
+
+        fgen = FunctionGenerator()
+        fgen.stats = module
+
+        f = fgen.create_function(["args"])
+        self.assertEqual(module.func_number, 1)
+        self.assert_(f.name == "func0")
+        self.assert_("args" in f.args)
  
     def testGenerateArguments(self):
         class TestModule(object):
