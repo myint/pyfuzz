@@ -18,6 +18,7 @@ pgen_opts = {
                },
     "list_comp_small_int" : {
                 "numbers" : [IntegerGen(-10, 10)],
+                "type" : [(1.0, "thin"), (1.0, "fat")],
                },
     "tuple" : {},
 
@@ -62,9 +63,14 @@ class ListComprehensionGenerator(FunctionGenerator):
 
     def get_generator(self, opts, literals):
         literals = list(literals) + [n.set_rng(self.rng) for n in opts["numbers"]] + ["i"]
-        exp = ArithGen(1, self.rng).generate(literals)
-        return "(%s for i in xrange(50))" % (exp, )
-
+        branch = eval_branches(self.rng, opts["type"])
+        if branch == "fat":
+            iterable = "xrange(5)"
+            exp = ArithGen(10, self.rng).generate(literals)
+        if branch == "thin":
+            iterable = "xrange(50)"
+            exp = ArithGen(1, self.rng).generate(literals)
+        return "(%s for i in %s)" % (exp, iterable)
 
 #    def get_list(self):
 #        pass
