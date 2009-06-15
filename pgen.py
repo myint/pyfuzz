@@ -5,7 +5,7 @@ pgen_opts = {
                 "mainloop" : 2000, "prog_size" : 10,
                },
     "arith_integer" : {
-                "children" : [(1.0, "arith_integer"), (1.0, ("arith_integer", "local")), (1.0, "loop_integer")],
+                "children" : [(1.0, "arith_integer"), (1.0, ("arith_integer", "local")), (2.0, "loop_integer")],
                 "max_children" : 5,
                 "numbers" : [gen_max_int_gen(), IntegerGen(-1000, 1000)],
                 "type" : [(1.0, "thin"), (1.0, "fat")],
@@ -21,6 +21,10 @@ pgen_opts = {
                 "type" : [(1.0, "thin"), (1.0, "fat")],
                },
     "tuple" : {},
+    "iter_gen" : {
+                "type" : [(1.0, "xrange"), (1.0, "range")],
+                "children" : [(1.0, "list_comp_gen"), (1.0, "list_comp_list")],
+               },
 
 }
 
@@ -54,6 +58,43 @@ class FunctionGenerator(object):
         self.stats.func_number += 1
         return f
 
+class IterableGenerator(object):
+    def __init__(self, module, stats, opts, rng):
+        self.opts = opts
+        self.module = module
+        self.rng = rng
+        self.stats = stats
+
+    def get_iterable(self, literals):
+        opts = self.opts["iter_gen"]        
+
+        types = list(opts["type"]) # iterables that dont require size
+        if self.stats.prog_size > 0:
+            types = types + opts["children"]
+
+        branch = eval_branches(self.rng, types)
+
+        if branch == "range":
+            return "range(%d)" % (self.rng.randint(1,50))
+
+        if branch == "xrange":
+            return "xrange(%d)" % (self.rng.randint(1,50))
+
+        
+        if branch == "list_comp_gen":
+            self.stats.prog_size -= 1
+
+            gen = ListComprehensionGenerator(self.module, self.stats, self.opts, self.rng)
+            return gen.get_generator(self.opts["list_comp_small_int"], literals)
+
+        if branch == "list_comp_list":
+            self.stats.prog_size -= 1
+
+            gen = ListComprehensionGenerator(self.module, self.stats, self.opts, self.rng)
+            return gen.get_list(self.opts["list_comp_small_int"], literals)
+
+
+        
 class ListComprehensionGenerator(FunctionGenerator):
     def __init__(self, module, stats, opts, rng):
         self.opts = opts
@@ -61,19 +102,22 @@ class ListComprehensionGenerator(FunctionGenerator):
         self.rng = rng
         self.stats = stats
 
-    def get_generator(self, opts, literals):
+    def get_expression(self, opts, literals):
         literals = list(literals) + [n.set_rng(self.rng) for n in opts["numbers"]] + ["i"]
         branch = eval_branches(self.rng, opts["type"])
+
+        iterable = IterableGenerator(self.module, self.stats, self.opts, self.rng).get_iterable(literals)
+
         if branch == "fat":
-            iterable = "xrange(5)"
             exp = ArithGen(10, self.rng).generate(literals)
         if branch == "thin":
-            iterable = "xrange(50)"
             exp = ArithGen(1, self.rng).generate(literals)
-        return "(%s for i in %s)" % (exp, iterable)
+        return "%s for i in %s" % (exp, iterable)
 
-#    def get_list(self):
-#        pass
+    def get_generator(self, opts, literals):
+        return "(%s)" % (self.get_expression(opts, literals), )
+    def get_list(self, opts, literals):
+        return "[%s]" % (self.get_expression(opts, literals), )
 
 class LoopIntegerGenerator(FunctionGenerator):
     def __init__(self, module, stats, opts, rng):
@@ -83,16 +127,8 @@ class LoopIntegerGenerator(FunctionGenerator):
         self.stats = stats
 
     def get_iterable(self, opts, literals):
-        branch = eval_branches(self.rng, opts["iterables"])
-        if branch == "xrange":
-            return "xrange(50)"
-
-        if branch == "range":
-            return "range(50)"
-
-        if branch == "list_comp_small_int":
-            gen = ListComprehensionGenerator(self.module, self.stats, self.opts, self.rng)
-            return gen.get_generator(self.opts["list_comp_small_int"], literals)
+        iter_gen = IterableGenerator(self.module, self.stats, self.opts, self.rng)
+        return iter_gen.get_iterable(literals)
 
     def loop_integer(self, opts, args_num, globals):
         '''Insert a new function with a loop containing some integer operations'''
