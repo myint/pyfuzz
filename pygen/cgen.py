@@ -85,18 +85,16 @@ class FixGenerator(object):
         return fixed
     
     def visit_args(self, args):
-        fixed = []
-        for arg in args:
-            if isinstance(arg, str):
-                fixed.append(arg)
-                continue
-            if callable(arg):
-                fixed.append(arg())
-                continue
+        return [self.visit_expr(arg) for arg in args]
+
+    def visit_expr(self, expr):   
+        if isinstance(expr, str):
+            return expr
+        if callable(expr):
+            return expr()
          
-            raise CodeGenException()
-        return fixed
-    
+        return self.visit(expr)
+ 
     def generate(self, node):
         return self.visit(node)
     

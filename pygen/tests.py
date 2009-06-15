@@ -199,8 +199,23 @@ class TestFixGenerator(unittest.TestCase):
         fixed = self.gen.visit(TestStatement())
         self.assertEqual(fixed, "a")
 
+    def testVisitArgs(self):
+        class TestStatement(Statement):
+            def get(self):
+                return "a"
+            def fix(self):
+                return "a"
+        
+        def func():
+            return "c"
 
-    
+        fixed = self.gen.visit_args([func, 'b', TestStatement()])
+        self.assert_("a" in fixed)
+        self.assert_("b" in fixed)
+        self.assert_("c" in fixed)
+
+
+
 class TestCodeGenerator(unittest.TestCase):
 
     def setUp(self):
