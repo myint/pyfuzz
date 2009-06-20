@@ -23,9 +23,11 @@ pgen_opts = {
     "tuple" : {},
     "iter_gen" : {
                 "type" : [(1.0, "xrange"), (1.0, "range")],
-                "children" : [(1.0, "list_comp_gen"), (1.0, "list_comp_list")],
+                "children" : [(1.0, "list_comp_gen"), (1.0, "list_comp_list"), (1.0, "yield_func")],
                },
-
+    "yieldfunction" : {
+                "numbers" : [gen_max_int_gen(), IntegerGen(-1000, 1000)],
+               },
 }
 
 from pygen.cgen import *
@@ -211,7 +213,7 @@ class ProgGenerator(object):
 
         main = []
         self.module.main_body.append(
-            ForLoop('i', 'xrange(%d)' % (lopts["mainloop"],), main)
+            ForLoop('i', ['xrange(%d)' % (lopts["mainloop"],)], main)
         )
 
         if "children" in lopts:

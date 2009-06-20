@@ -77,6 +77,11 @@ class FixGenerator(object):
             if isinstance(stmt, str):
                 fixed.append(stmt)
                 continue
+
+            if isinstance(stmt, list):
+                fixed.append(self.visit_args(list))
+                continue
+
             if callable(stmt):
                 fixed.append(stmt())
                 continue
@@ -90,6 +95,10 @@ class FixGenerator(object):
     def visit_expr(self, expr):   
         if isinstance(expr, str):
             return expr
+        
+        if isinstance(expr, list):
+            return self.visit_args(expr)
+
         if callable(expr):
             return expr()
          
@@ -183,6 +192,24 @@ class CodeGenerator(object):
             content += self.visit(depth+1, node)
         return content
 
+    def visit_args(self, args):
+        content = []
+        for arg in args:
+            if isinstance(arg, str):
+                content.append(self.code(0, arg))
+                continue
+
+            if isinstance(arg, list):
+                content.append("".join(self.visit_args(arg)))
+                continue
+
+            if callable(arg):
+                content.append(self.code(0, arg()))
+                continue
+
+            content += self.visit(0, arg)
+        return content
+
     @dispatch.on('node')
     def visit(self, depth, node):
         '''Generic visit function'''
@@ -212,7 +239,8 @@ class CodeGenerator(object):
 
     @visit.when(ForLoop)
     def visit(self, depth, node):
-        line = "".join(["for ", node.pointer, " in ", node.iterable, ":"])
+        iterable = " ".join(self.visit_args(node.iterable))
+        line = "".join(["for ", node.pointer, " in ", iterable, ":"])
         content = [self.code(depth, line)]
         content += self.visit_block(depth, node.content)
         return content
@@ -238,7 +266,7 @@ class CodeGenerator(object):
 
     @visit.when(CallStatement)
     def visit(self, depth, node):
-        args = ", ".join(node.args)
+        args = ", ".join(self.visit_args(node.args))
         fun = "".join([node.func.name, '(', args, ')'])
         return [self.code(depth, fun)]
 

@@ -21,28 +21,28 @@ class IterableGenerator(object):
         branch = eval_branches(self.rng, types)
 
         if branch == "range":
-            return "range(%d)" % (self.rng.randint(1,50))
+            return ["range(%d)" % (self.rng.randint(1,50))]
 
         if branch == "xrange":
-            return "xrange(%d)" % (self.rng.randint(1,50))
+            return ["xrange(%d)" % (self.rng.randint(1,50))]
 
 
         if branch == "list_comp_gen":
             self.stats.prog_size -= 1
 
             gen = ListComprehensionGenerator(self.module, self.stats, self.opts, self.rng)
-            return gen.get_generator(self.opts["list_comp_small_int"], literals)
+            return [gen.get_generator(self.opts["list_comp_small_int"], literals)]
 
         if branch == "list_comp_list":
             self.stats.prog_size -= 1
 
             gen = ListComprehensionGenerator(self.module, self.stats, self.opts, self.rng)
-            return gen.get_list(self.opts["list_comp_small_int"], literals)
+            return [gen.get_list(self.opts["list_comp_small_int"], literals)]
 
-#        if branch == "yield_func":
-#            self.stats.prog_size -= 1
-#            gen = YieldFunctionGenerator(self.module, self.stats, self.opts, self.rng)
-#            return gen.generate(2, literals)
+        if branch == "yield_func":
+            self.stats.prog_size -= 1
+            gen = YieldFunctionGenerator(self.module, self.stats, self.opts, self.rng)
+            return [gen.generate(2, literals)]
 
 class YieldFunctionGenerator(FunctionGenerator):
     def __init__(self, module, stats, opts, rng):
@@ -92,19 +92,20 @@ class ListComprehensionGenerator(FunctionGenerator):
         self.stats = stats
 
     def get_expression(self, opts, literals):
-        literals = list(literals) + [n.set_rng(self.rng) for n in opts["numbers"]] + ["i"]
+        literals = list(literals) + [n.set_rng(self.rng) for n in opts["numbers"]]
         branch = eval_branches(self.rng, opts["type"])
 
         iterable = IterableGenerator(self.module, self.stats, self.opts, self.rng).get_iterable(literals)
 
+        literals.append('i')
         if branch == "fat":
             exp = ArithGen(10, self.rng).generate(literals)
         if branch == "thin":
             exp = ArithGen(1, self.rng).generate(literals)
-        return "%s for i in %s" % (exp, iterable)
+        return ["%s for i in " % (exp, ), iterable]
 
     def get_generator(self, opts, literals):
-        return "(%s)" % (self.get_expression(opts, literals), )
+        return ["(", self.get_expression(opts, literals), ")"]
     def get_list(self, opts, literals):
-        return "[%s]" % (self.get_expression(opts, literals), )
+        return ["[", self.get_expression(opts, literals), "]"]
 

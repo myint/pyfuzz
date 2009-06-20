@@ -47,7 +47,7 @@ class TestForLoop(unittest.TestCase):
         self.fix = FixGenerator()
 
     def testEmptyForLoop(self):
-        n = ForLoop("i", "xrange(10)", [])
+        n = ForLoop("i", ["xrange(10)"], [])
         n = self.fix.generate(n)
         
         
@@ -58,7 +58,7 @@ class TestForLoop(unittest.TestCase):
 
     
     def testStringForLoop(self):
-        n = ForLoop("i", "xrange(10)", ['pass'])
+        n = ForLoop("i", ["xrange(10)"], ['pass'])
         n = self.fix.generate(n)
         
         
@@ -214,6 +214,9 @@ class TestFixGenerator(unittest.TestCase):
         self.assert_("b" in fixed)
         self.assert_("c" in fixed)
 
+        fixed = self.gen.visit_args([['b']])
+        self.assert_(isinstance(fixed[0], list))
+
 
 
 class TestCodeGenerator(unittest.TestCase):
@@ -238,6 +241,18 @@ class TestCodeGenerator(unittest.TestCase):
             
         self.assert_("a" in self.gen.generate(TestStatement()))
         
+    def testVisitArgs(self):
+        code = self.gen.visit_args(['b'])
+        self.assert_('b' in code)
+        
+        code = self.gen.visit_args([['b']])
+        self.assert_('b' in code)
+          
+        def func():
+            return "c"
+
+        code = self.gen.visit_args([func])
+        self.assert_('c' in code)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
