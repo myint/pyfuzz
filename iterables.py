@@ -4,6 +4,8 @@ from arithgen import ArithGen
 
 from utils import eval_branches, FunctionGenerator
 
+import pgen
+
 class IterableGenerator(object):
     def __init__(self, module, stats, opts, rng):
         self.opts = opts
@@ -51,6 +53,20 @@ class YieldFunctionGenerator(FunctionGenerator):
         self.rng = rng
         self.stats = stats
 
+    def generate_child(self, func, literals):
+        '''Insert a function call to calculate some numbers'''
+        gen = pgen.ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
+        c = gen.arith_integer(self.opts["arith_integer"], 2)
+
+        self.module.content.insert(0, c)
+        
+        args = self.rng.sample(literals, 2)
+        result = self.next_variable()
+        call = Assignment(result, '=', [CallStatement(c, args)])
+        func.content.append(call)
+        func.content.append("yield %s" % (result, ))
+
+
     def generate(self, args_num, pliterals):
         '''Returns a CallStatement'''
 
@@ -62,16 +78,8 @@ class YieldFunctionGenerator(FunctionGenerator):
 
         literals = list(args) + [n.set_rng(self.rng) for n in opts["numbers"]]
 
-        # Insert a function call to calculate some numbers
-#        gen = pgen.ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
-#        c = gen.arith_integer(None, 2)
-
-#        self.module.content.insert(0, c)
-        
-#        args = self.rng.sample(args, 2)
-#        result = self.next_variable()
-#        call = Assignment(result, '=', [CallStatement(c, args)])
-#        f.content.append(call)
+        if self.stats.prog_size > 0:
+            self.generate_child(f, literals)
 
         for i in xrange(10):
             result = self.next_variable()

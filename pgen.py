@@ -14,7 +14,6 @@ pgen_opts = {
     "loop_integer" : {
                 "numbers" : [IntegerGen(-10, 10)],
                 "if" : 0.10,
-                "iterables" : [(1.0, "xrange"), (1.0, "range"), (1.0, "list_comp_small_int")],
                },
     "list_comp_small_int" : {
                 "numbers" : [IntegerGen(-10, 10)],
