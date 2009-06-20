@@ -39,6 +39,51 @@ class IterableGenerator(object):
             gen = ListComprehensionGenerator(self.module, self.stats, self.opts, self.rng)
             return gen.get_list(self.opts["list_comp_small_int"], literals)
 
+#        if branch == "yield_func":
+#            self.stats.prog_size -= 1
+#            gen = YieldFunctionGenerator(self.module, self.stats, self.opts, self.rng)
+#            return gen.generate(2, literals)
+
+class YieldFunctionGenerator(FunctionGenerator):
+    def __init__(self, module, stats, opts, rng):
+        self.opts = opts
+        self.module = module
+        self.rng = rng
+        self.stats = stats
+
+    def generate(self, args_num, pliterals):
+        '''Returns a CallStatement'''
+
+        opts = self.opts["yieldfunction"]
+
+        args = self.generate_arguments(args_num)
+        f = self.create_function(args)
+        self.module.content.insert(0, f)
+
+        literals = list(args) + [n.set_rng(self.rng) for n in opts["numbers"]]
+
+        # Insert a function call to calculate some numbers
+#        gen = pgen.ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
+#        c = gen.arith_integer(None, 2)
+
+#        self.module.content.insert(0, c)
+        
+#        args = self.rng.sample(args, 2)
+#        result = self.next_variable()
+#        call = Assignment(result, '=', [CallStatement(c, args)])
+#        f.content.append(call)
+
+        for i in xrange(10):
+            result = self.next_variable()
+            exp = ArithGen(2, self.rng).generate(literals)
+            literals.append(result)
+
+            f.content.append(Assignment(result, '=', [exp]))
+            f.content.append("yield %s" % (result, ))
+
+        pargs = self.rng.sample(pliterals, args_num)
+        return CallStatement(f, pargs)
+
 class ListComprehensionGenerator(FunctionGenerator):
     def __init__(self, module, stats, opts, rng):
         self.opts = opts
