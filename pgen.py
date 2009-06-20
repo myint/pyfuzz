@@ -2,7 +2,7 @@ from arithgen import IntegerGen, gen_max_int_gen
 
 pgen_opts = {
     "module" : {"children" : [(1.0, "arith_integer"), (0.0, "arith_float")],
-                "mainloop" : 2000, "prog_size" : 10,
+                "mainloop" : 2000, "prog_size" : 20,
                },
     "arith_integer" : {
                 "children" : [(1.0, "arith_integer"), (1.0, ("arith_integer", "local")), (2.0, "loop_integer")],
