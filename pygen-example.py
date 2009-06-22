@@ -8,12 +8,28 @@ import time
 
 import random
 
-import logging
-import logging.config
-
-log = logging.getLogger("pygen")
+from optparse import OptionParser
 
 def _main():
+
+    parser = OptionParser()
+    parser.add_option("-b", "--base", type="string", dest="base", default="python", help="Base python binary. Default: python")
+    parser.add_option("-B", "--base-args", type="string", dest="baseargs", default="",
+                        help="Additional arguments for base binary")
+    parser.add_option("-t", "--test", type="string", dest="test", help="Python binary to test.")
+    parser.add_option("-T", "--test-args", type="string", dest="testargs", default="",
+                        help="Additional arguments for base binary")
+
+    parser.add_option("--break", action="store_true", dest="break_on_error", default=False, help="Break on test error")
+
+    parser.add_option("-i", type="int", dest="iterations", default=100000, help="Number of test iterations.")
+    parser.add_option("-s", "--seed", type="int", dest="seed", default=None, help="Seed value for random number generator")
+
+    (options, args) = parser.parse_args()
+
+    if not options.test:
+        print "Please specifiy a test binary."
+        return
 
     rng = random.Random()
     
@@ -25,7 +41,7 @@ def _main():
     time_test = 0.0
     time_base = 0.0
     
-    for i in xrange(100000):
+    for i in xrange(options.iterations):
         
         clock = time.time()
         mod = pgen.generate()
@@ -37,14 +53,16 @@ def _main():
             code_file.write(code)
         
         clock_test = time.time()    
-        p_test = subprocess.Popen(['/home/ebo/projects/unladen-swallow/python', 'code.py'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p_test = subprocess.Popen([options.test] + options.testargs.split() + ['code.py'],
+                    stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout_test, stderr_test = p_test.communicate()
         clock_test = time.time() - clock_test
         time_test += clock_test
         totaltime += clock_test
         
         clock_base = time.time()
-        p_base = subprocess.Popen(['python', 'code.py'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p_base = subprocess.Popen([options.base] + options.baseargs.split() + ['code.py'],
+                    stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout_base, stderr_base = p_base.communicate()
         clock_base = time.time() - clock_base
         time_base += clock_base
@@ -54,13 +72,18 @@ def _main():
             print "------- Encountered crash: Test -------"
             print code
             print "---------------------------------------"
+            if options.break_on_error:
+                return
 
 
         if p_base.returncode == -11:
             print "------- Encountered crash: Base -------"
             print code
             print "---------------------------------------"
-            
+            if options.break_on_error:
+                return
+
+           
 #        if clock_test < clock_base/2.0:
 #            print "------- Fast test -------"
 #            print "Test", clock_test
@@ -81,6 +104,9 @@ def _main():
             print "---------------------------------------"
             print code
             print "---------------------------------------"
+            if options.break_on_error:
+                return
+
 
         
 #        if clock > 10.0:
