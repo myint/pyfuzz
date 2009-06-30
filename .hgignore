@@ -3,6 +3,8 @@ syntax: glob
 *.pyc
 *.db
 *.geany
+*.swp
+*.orig
 
 .coverage/
 *,cover
