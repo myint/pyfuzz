@@ -1,4 +1,4 @@
-import dispatch
+import qndispatch as dispatch
 
 class CodeGenException(Exception):
     pass
