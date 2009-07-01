@@ -1,7 +1,7 @@
 from pygen.cgen import *
 
 def eval_branches(rng, branches):
-    total = sum((x[0] for x in branches))
+    total = sum((chance for chance,_ in branches))
     val = rng.random() * total
 
     for chance, result in branches:
@@ -9,7 +9,6 @@ def eval_branches(rng, branches):
             return result
         else:
             val -= chance
-    return None
 
 class FunctionGenerator(object):
     def generate_arguments(self, args_num):

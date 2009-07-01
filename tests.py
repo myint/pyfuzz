@@ -2,6 +2,17 @@ import unittest
 
 from pgen import *
 
+
+class TestUtilFunctions(unittest.TestCase):
+    def testEvalBranches(self):
+        class Random(object):
+            def random(self):
+                return 0.9
+
+        rng = Random()
+
+        result = eval_branches(rng, [(0.5, 0), (1.0, 1)])
+        self.assertEqual(result, 1)
     
 class TestFunctionGenerator(unittest.TestCase):
 
