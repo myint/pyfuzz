@@ -1,8 +1,15 @@
-pyfuzz is a random program generator for python. It was developed to test the JIT compiler of Unladen Swallow.
+pyfuzz is a random program generator for python. It was developed to test the 
+JIT compiler of Unladen Swallow.
 
 Website and repository:
 http://bitbucket.org/ebo/pyfuzz/
 
-Execute pgen-example.py to generate a new random program and output it to stdout.
+Execute pgen-example.py to generate a new random program and output it to 
+stdout.
 
-Execute pygen-example.py to test a python binary. You must specify a base and a test binary using the -b and -t commandline options. 
+Execute pygen-example.py to test a python binary. You must specify a base and 
+a test binary using the -b and -t commandline options.
+
+The pygen directory contains a module to represent a python program as an 
+object tree and transform it into a text representation.
+

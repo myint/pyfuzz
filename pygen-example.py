@@ -62,7 +62,15 @@ def _main():
         clock_test = time.time() - clock_test
         time_test += clock_test
         totaltime += clock_test
-        
+
+        if p_test.returncode < 0:
+            print "------- Encountered crash: Test -------"
+            print code
+            print "---------------------------------------"
+            if options.break_on_error:
+                return
+
+       
         clock_base = time.time()
         p_base = subprocess.Popen([options.base] + options.baseargs.split() + ['code.py'],
                     stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -71,15 +79,8 @@ def _main():
         time_base += clock_base
         totaltime += clock_base
         
-        if p_test.returncode == -11:
-            print "------- Encountered crash: Test -------"
-            print code
-            print "---------------------------------------"
-            if options.break_on_error:
-                return
 
-
-        if p_base.returncode == -11:
+        if p_base.returncode < 0:
             print "------- Encountered crash: Base -------"
             print code
             print "---------------------------------------"
@@ -116,8 +117,8 @@ def _main():
 #            print code
         
         if (i+1) % 10 == 0:
-            print "%f Functions per Second" % ((i+1)/totaltime,)
-            print "Test: %f calls/sec | Base: %f calls/sec" % ((i+1)/time_test, (i+1)/time_base)
+            print "%f Functions per Second" % (i/totaltime,)
+            print "Test: %f calls/sec | Base: %f calls/sec" % (i/time_test, i/time_base)
             
         
         
