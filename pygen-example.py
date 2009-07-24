@@ -3,6 +3,7 @@ from pygen.cgen import *
 
 from pgen import *
 
+import sys
 import subprocess
 import time
 
@@ -11,9 +12,10 @@ import random
 from optparse import OptionParser
 
 def _main():
+    default_binary = sys.executable
 
     parser = OptionParser()
-    parser.add_option("-b", "--base", type="string", dest="base", default="python", help="Base python binary. Default: python")
+    parser.add_option("-b", "--base", type="string", dest="base", default=default_binary, help="Base python binary. Default: "+default_binary)
     parser.add_option("-B", "--base-args", type="string", dest="baseargs", default="",
                         help="Additional arguments for base binary")
     parser.add_option("-t", "--test", type="string", dest="test", help="Python binary to test.")
@@ -29,6 +31,7 @@ def _main():
 
     if not options.test:
         print "Please specifiy a test binary."
+        parser.print_help()
         return
 
     rng = random.Random()
