@@ -258,7 +258,11 @@ class CodeGenerator(object):
 
     @visit.when(Function)
     def visit(self, depth, node):
-        args = ", ".join(node.args)
+        if node.args:
+            args = ", ".join(node.args)
+        else:
+            args = ""
+
         fun = "".join(['def ', node.name, '(', args, '):'])
         content = [self.code(depth, fun)]
         content += self.visit_block(depth, node.content)

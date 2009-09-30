@@ -5,7 +5,12 @@ pgen_opts = {
                 "mainloop" : 2000, "prog_size" : 20,
                },
     "arith_integer" : {
-                "children" : [(1.0, "arith_integer"), (1.0, ("arith_integer", "local")), (2.0, "loop_integer")],
+                "children" : [
+                        (1.0, "arith_integer"),
+                        (1.0, ("arith_integer", "local")),
+                        (2.0, "loop_integer"),
+                        (1.0, "change_global"),
+                        ],
                 "max_children" : 5,
                 "numbers" : [gen_max_int_gen(), IntegerGen(-1000, 1000)],
                 "type" : [(1.0, "thin"), (1.0, "fat")],
@@ -27,6 +32,8 @@ pgen_opts = {
     "yieldfunction" : {
                 "numbers" : [gen_max_int_gen(), IntegerGen(-1000, 1000)],
                },
+    "change_global" : {
+               },
 }
 
 from pygen.cgen import *
@@ -34,6 +41,7 @@ from arithgen import ArithGen
 
 from utils import eval_branches, FunctionGenerator
 from iterables import IterableGenerator, ListComprehensionGenerator 
+from globalsgen import ChangeGlobalGenerator
 
 class LoopIntegerGenerator(FunctionGenerator):
     def __init__(self, module, stats, opts, rng):
@@ -154,6 +162,19 @@ class ArithIntegerGenerator(FunctionGenerator):
             call = Assignment(result, '=', [CallStatement(c, args)])
             f.content.append(call)
             literals.add(result)
+
+        if branch == "change_global":
+            gen = ChangeGlobalGenerator(self.module, self.stats, self.opts, self.rng)
+            
+            c = gen.generate(self.opts['change_global'], 0, [])
+            self.module.content.insert(0, c)
+            
+            result = self.next_variable()
+            
+            call = Assignment(result, '=', [CallStatement(c, [])])
+            f.content.append(call)
+            literals.add(result)
+            
 
 
 
