@@ -271,7 +271,11 @@ class CodeGenerator(object):
     @visit.when(CallStatement)
     def visit(self, depth, node):
         args = ", ".join(self.visit_args(node.args))
-        fun = "".join([node.func.name, '(', args, ')'])
+        
+        if isinstance(node.func, basestring):
+            fun = "".join([node.func, '(', args, ')'])
+        else:
+            fun = "".join([node.func.name, '(', args, ')'])
         return [self.code(depth, fun)]
 
     @visit.when(Assignment)

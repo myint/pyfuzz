@@ -47,6 +47,9 @@ class IterableGenerator(object):
             return [gen.generate(2, literals)]
 
 class YieldFunctionGenerator(FunctionGenerator):
+    """
+    Returns a generator which uses yield.
+    """
     def __init__(self, module, stats, opts, rng):
         self.opts = opts
         self.module = module
@@ -93,6 +96,9 @@ class YieldFunctionGenerator(FunctionGenerator):
         return CallStatement(f, pargs)
 
 class ListComprehensionGenerator(FunctionGenerator):
+    """
+    Returns a listcomprehension either as a list or a generator.
+    """
     def __init__(self, module, stats, opts, rng):
         self.opts = opts
         self.module = module

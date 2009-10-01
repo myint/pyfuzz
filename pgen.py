@@ -249,6 +249,9 @@ class ProgGenerator(object):
                 main.append(Assignment('x', '=', ['5.0']))
                 main.append('print x,')
 
+        self.module.main_body.insert(0, "print 'prog_size: %d'" % (lopts["prog_size"] - self.prog_size,))
+        self.module.main_body.insert(1, "print 'func_number: %d'" % (self.func_number,))
+        self.module.main_body.insert(2, "print 'arg_number: %d'" % (self.arg_number,))
         return self.module
 
     def arith_integer(self, opts, args_num, globals=[]):
