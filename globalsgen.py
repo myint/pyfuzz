@@ -21,13 +21,13 @@ class ChangeGlobalGenerator(FunctionGenerator):
 
 
     def generate_globalon(self):
-        f = self.create_function(0)
+        f = self.create_function([])
         f.content.append("global len")
         f.content.append("len = lambda x : 1")
         return f
 
     def generate_globaloff(self):
-        f = self.create_function(0)
+        f = self.create_function([])
         f.content.append("global len")
         f.content.append("del len")
         return f
@@ -45,7 +45,7 @@ class ChangeGlobalGenerator(FunctionGenerator):
 
         iter = iter_gen.get_iterable(["1", "2", "3", "4"])
 
-        f = self.create_function(0)
+        f = self.create_function([])
         f.content.extend(
             [
                 CallStatement(fon, []),
