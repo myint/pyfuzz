@@ -10,6 +10,7 @@ pgen_opts = {
                         (1.0, ("arith_integer", "local")),
                         (2.0, "loop_integer"),
                         (1.0, "change_global"),
+                        (1.0, "integer_closure"),
                         ],
                 "max_children" : 5,
                 "numbers" : [gen_max_int_gen(), IntegerGen(-1000, 1000)],
@@ -34,6 +35,7 @@ pgen_opts = {
                },
     "change_global" : {
                },
+    "integer_closure" : {},
 }
 
 from pygen.cgen import *
@@ -175,7 +177,16 @@ class ArithIntegerGenerator(FunctionGenerator):
             f.content.append(call)
             literals.add(result)
             
+        if branch == "integer_closure":
+            gen = IntegerClosureGenerator(self.module, self.stats, self.opts, self.rng)
+            func = gen.generate(self.opts['integer_closure'], 2, [])
 
+            args = self.rng.sample(list(literals), 2)
+            result = self.next_variable()
+
+            call = Assignment(result, '=', [CallStatement(func, args)])
+            f.content.append(call)
+            literals.add(result)
 
 
     def arith_integer(self, opts, args_num, globals=[]):
@@ -270,5 +281,43 @@ class ProgGenerator(object):
 
 
 
+class IntegerClosureGenerator(FunctionGenerator):
+    def __init__(self, module, stats, opts, rng):
+        self.opts = opts
+        self.module = module
+        self.rng = rng
+        self.stats = stats
 
+    def generate(self, opts, args_num, globals=[]):
+        '''Insert a new arithmetic function using only integers'''
+        args = self.generate_arguments(args_num)
+
+        closure = self.create_function(args)
+        
+        gen = self.create_function([])
+        
+        gen.content.extend(
+            [
+                "closure = [0]",
+                closure,
+                Assignment("func", "=", [closure.name]),
+                "return func",
+            ]
+        )
+        
+        c_var = self.next_variable()
+        
+        self.module.content.insert(0, gen)
+        self.module.content.insert(1, Assignment(c_var, "=", [CallStatement(gen, [])]))
+ 
+        gen_ai = ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
+        f = gen_ai.arith_integer(self.opts["arith_integer"], args_num, [])
+        
+        self.module.content.insert(0, f)
+        
+        closure.content.append(Assignment("closure[0]", "+=", [CallStatement(f, args)]))
+        closure.content.append("return closure[0]")
+        
+        return c_var
+        
 
