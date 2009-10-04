@@ -11,6 +11,7 @@ pgen_opts = {
                         (2.0, "loop_integer"),
                         (1.0, "change_global"),
                         (1.0, "integer_closure"),
+                        (1.0, "tail_recursion"),
                         ],
                 "max_children" : 5,
                 "numbers" : [gen_max_int_gen(), IntegerGen(-1000, 1000)],
@@ -34,8 +35,16 @@ pgen_opts = {
                 "numbers" : [gen_max_int_gen(), IntegerGen(-1000, 1000)],
                },
     "change_global" : {
+                "numbers" : [IntegerGen(-10, 10)],
                },
-    "integer_closure" : {},
+    "integer_closure" : {
+                "numbers" : [IntegerGen(-10, 10)]
+               },
+    "tail_recursion" : {
+                "numbers" : [IntegerGen(-10, 10)],
+                "type" : [(1.0, "standard"),(1.0, "closure"),(0.5, "fcall")],
+               },
+
 }
 
 from pygen.cgen import *
@@ -44,6 +53,7 @@ from arithgen import ArithGen
 from utils import eval_branches, FunctionGenerator
 from iterables import IterableGenerator, ListComprehensionGenerator 
 from globalsgen import ChangeGlobalGenerator
+from recursion import TailRecursionGenerator
 
 class LoopIntegerGenerator(FunctionGenerator):
     def __init__(self, module, stats, opts, rng):
@@ -188,6 +198,18 @@ class ArithIntegerGenerator(FunctionGenerator):
             f.content.append(call)
             literals.add(result)
 
+        if branch == "tail_recursion":
+            gen = TailRecursionGenerator(self.module, self.stats, self.opts, self.rng)
+            func = gen.generate(self.opts['tail_recursion'], 2, [])
+
+            args = self.rng.sample(list(literals), 2)
+            result = self.next_variable()
+
+            call = Assignment(result, '=', [CallStatement(func, args)])
+            f.content.append(call)
+            literals.add(result)
+
+
 
     def arith_integer(self, opts, args_num, globals=[]):
         '''Insert a new arithmetic function using only integers'''
@@ -296,9 +318,17 @@ class IntegerClosureGenerator(FunctionGenerator):
         
         gen = self.create_function([])
         
+        if opts["numbers"]:
+            number_gen = self.rng.choice(opts["numbers"])
+            number_gen.set_rng(self.rng)
+            number = number_gen()
+        else:
+            number = 0
+
+        
         gen.content.extend(
             [
-                "closure = [0]",
+                "closure = [%s]" % (number, ),
                 closure,
                 Assignment("func", "=", [closure.name]),
                 "return func",

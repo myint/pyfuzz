@@ -20,13 +20,21 @@ class ChangeGlobalGenerator(FunctionGenerator):
         self.stats = stats
 
 
-    def generate_globalon(self):
+    def generate_globalon(self, opts):
         f = self.create_function([])
+        
+        if opts["numbers"]:
+            gen = self.rng.choice(opts["numbers"])
+            gen.set_rng(self.rng)
+            number = gen()
+        else:
+            number = 1
+        
         f.content.append("global len")
-        f.content.append("len = lambda x : 1")
+        f.content.append("len = lambda x : %s" % (number,))
         return f
 
-    def generate_globaloff(self):
+    def generate_globaloff(self, opts):
         f = self.create_function([])
         f.content.append("global len")
         f.content.append("del len")
@@ -35,15 +43,25 @@ class ChangeGlobalGenerator(FunctionGenerator):
 
 
     def generate(self, opts, args_num, globals):
-        fon = self.generate_globalon()
-        foff = self.generate_globaloff()
+        fon = self.generate_globalon(opts)
+        foff = self.generate_globaloff(opts)
 
         self.module.content.insert(0, fon)
         self.module.content.insert(0, foff)
 
         iter_gen = IterableGenerator(self.module, self.stats, self.opts, self.rng)
 
-        iter = iter_gen.get_iterable(["1", "2", "3", "4"])
+        if opts["numbers"]:
+            numbers = []
+            for i in xrange(4):
+                gen = self.rng.choice(opts["numbers"])
+                gen.set_rng(self.rng)
+                numbers.append(gen())
+        else:
+            numbers = ["1", "2", "3", "4"]
+
+
+        iter = iter_gen.get_iterable(numbers)
 
         f = self.create_function([])
         f.content.extend(
