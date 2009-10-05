@@ -122,7 +122,7 @@ class TailRecursionGenerator(FunctionGenerator):
         func.content.append(rec)
         
         func.content.extend(
-            [Assignment("result", "=", [CallStatement(rec, ["20", "0"])]),
+            [Assignment("result", "=", [CallStatement(rec, ["10", "0"])]),
             "return result"])
         
         self.module.content.append(func)
