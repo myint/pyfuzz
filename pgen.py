@@ -2,7 +2,7 @@ from arithgen import IntegerGen, gen_max_int_gen
 
 pgen_opts = {
     "module" : {"children" : [(1.0, "arith_integer"), (0.0, "arith_float")],
-                "mainloop" : 2000, "prog_size" : 20,
+                "mainloop" : 2000, "prog_size" : 10, "module_size" : 100,
                },
     "arith_integer" : {
                 "children" : [
@@ -263,13 +263,14 @@ class ProgGenerator(object):
         lopts = self.opts["module"]
 
         self.prog_size = lopts["prog_size"]
+        self.module_size = lopts["module_size"] - self.prog_size
 
         main = []
         self.module.main_body.append(
             ForLoop('i', ['xrange(%d)' % (lopts["mainloop"],)], main)
         )
         
-        while self.prog_size > 0:
+        while self.module_size > 0 or self.prog_size > 0:
             if "children" in lopts:
                 branch = eval_branches(self.rng, lopts["children"])
                 if branch == "arith_integer":
@@ -287,6 +288,12 @@ class ProgGenerator(object):
                             (lopts["prog_size"] - self.prog_size,))
             self.module.main_body.insert(1, "print 'func_number: %d'" % (self.func_number,))
             self.module.main_body.insert(2, "print 'arg_number: %d'" % (self.arg_number,))
+            
+            created_size = lopts["prog_size"] - self.prog_size
+            refill = min(created_size, self.module_size)
+
+            self.module_size -= refill
+            self.prog_size += refill
 
         return self.module
 
