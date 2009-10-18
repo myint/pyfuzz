@@ -268,23 +268,26 @@ class ProgGenerator(object):
         self.module.main_body.append(
             ForLoop('i', ['xrange(%d)' % (lopts["mainloop"],)], main)
         )
+        
+        while self.prog_size > 0:
+            if "children" in lopts:
+                branch = eval_branches(self.rng, lopts["children"])
+                if branch == "arith_integer":
+                    main.append(Assignment('x', '=', ['5']))
+                    f = self.arith_integer(self.opts[branch], 2)
+                    main.append(Assignment('x', '=', [CallStatement(f, ['x','i'])]))
+                    main.append('print x,')
 
-        if "children" in lopts:
-            branch = eval_branches(self.rng, lopts["children"])
-            if branch == "arith_integer":
-                main.append(Assignment('x', '=', ['5']))
-                f = self.arith_integer(self.opts[branch], 2)
-                main.append(Assignment('x', '=', [CallStatement(f, ['x','i'])]))
-                main.append('print x,')
+                    self.module.content.insert(0, f)
+                if branch == "arith_float":
+                    main.append(Assignment('x', '=', ['5.0']))
+                    main.append('print x,')
 
-                self.module.content.insert(0, f)
-            if branch == "arith_float":
-                main.append(Assignment('x', '=', ['5.0']))
-                main.append('print x,')
+            self.module.main_body.insert(0, "print 'prog_size: %d'" % 
+                            (lopts["prog_size"] - self.prog_size,))
+            self.module.main_body.insert(1, "print 'func_number: %d'" % (self.func_number,))
+            self.module.main_body.insert(2, "print 'arg_number: %d'" % (self.arg_number,))
 
-        self.module.main_body.insert(0, "print 'prog_size: %d'" % (lopts["prog_size"] - self.prog_size,))
-        self.module.main_body.insert(1, "print 'func_number: %d'" % (self.func_number,))
-        self.module.main_body.insert(2, "print 'arg_number: %d'" % (self.arg_number,))
         return self.module
 
     def arith_integer(self, opts, args_num, globals=[]):
