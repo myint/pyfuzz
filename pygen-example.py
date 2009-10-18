@@ -6,6 +6,7 @@ from pgen import *
 import sys
 import subprocess
 import time
+import pickle
 
 import random
 
@@ -23,7 +24,7 @@ def _main():
                         help="Additional arguments for base binary")
 
     parser.add_option("--break", action="store_true", dest="break_on_error", default=False, help="Break on test error")
-
+    parser.add_option("-p", "--pickle", action="store_true", dest="pickle", default=False, help="Output pickled AST.")
     parser.add_option("-i", type="int", dest="iterations", default=100000, help="Number of test iterations.")
     parser.add_option("-s", "--seed", type="int", dest="seed", default=None, help="Seed value for random number generator")
 
@@ -49,7 +50,9 @@ def _main():
         clock = time.time()
         mod = pgen.generate()
         fixed = fix.generate(mod)
-        
+        with open("code.pickle","w") as code_pickle:
+            pickle.dump(fixed, code_pickle)
+            
         code = gen.generate(fixed)
  
         with open("code.py", "w") as code_file:
