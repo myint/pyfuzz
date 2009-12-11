@@ -36,6 +36,11 @@ def _main():
         return
 
     rng = random.Random()
+    seed = options.seed
+    if seed is None:
+        seed = int(rng.random() * sys.maxint)
+    print "Using random seed", seed
+    rng.seed(seed)
     
     pgen = ProgGenerator(pgen_opts, rng)
     
@@ -44,9 +49,11 @@ def _main():
     totaltime = 0.0
     time_test = 0.0
     time_base = 0.0
+    failed_a_test = False
     
     for i in xrange(options.iterations):
         
+        failed_this_test = False
         clock = time.time()
         mod = pgen.generate()
         fixed = fix.generate(mod)
@@ -70,6 +77,7 @@ def _main():
             print "------- Encountered crash: Test -------"
             print code
             print "---------------------------------------"
+            failed_this_test = True
             if options.break_on_error:
                 return
 
@@ -87,6 +95,7 @@ def _main():
             print "------- Encountered crash: Base -------"
             print code
             print "---------------------------------------"
+            failed_this_test = True
             if options.break_on_error:
                 return
 
@@ -111,6 +120,7 @@ def _main():
             print "---------------------------------------"
             print code
             print "---------------------------------------"
+            failed_this_test = True
             if options.break_on_error:
                 return
 
@@ -119,13 +129,19 @@ def _main():
 #        if clock > 10.0:
 #            print code
         
+        failed_a_test |= failed_this_test
+        if not failed_this_test:
+            print "Iteration %s: PASS" % (i + 1,)
         if (i+1) % 10 == 0:
             print "%f Functions per Second" % (i/totaltime,)
             print "Test: %f calls/sec | Base: %f calls/sec" % (i/time_test, i/time_base)
-            
-        
-        
-        
+
+    if failed_a_test:
+        print "Some tests failed; consult diagnostic output above."
+    else:
+        print "All tests successful!"
+
+
 
 if __name__ == '__main__':
     _main()
