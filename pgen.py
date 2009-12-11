@@ -265,12 +265,12 @@ class ProgGenerator(object):
         self.prog_size = lopts["prog_size"]
         self.module_size = lopts["module_size"] - self.prog_size
 
-        main = []
-        self.module.main_body.append(
-            ForLoop('i', ['xrange(%d)' % (lopts["mainloop"],)], main)
-        )
-        
+ 
         while self.module_size > 0 or self.prog_size > 0:
+            main = []
+
+            loop = ForLoop('i', ['xrange(%d)' % (lopts["mainloop"],)], main)
+
             if "children" in lopts:
                 branch = eval_branches(self.rng, lopts["children"])
                 if branch == "arith_integer":
@@ -284,11 +284,12 @@ class ProgGenerator(object):
                     main.append(Assignment('x', '=', ['5.0']))
                     main.append('print x,')
 
-            self.module.main_body.insert(0, "print 'prog_size: %d'" % 
+            self.module.main_body.append("print 'prog_size: %d'" % 
                             (lopts["prog_size"] - self.prog_size,))
-            self.module.main_body.insert(1, "print 'func_number: %d'" % (self.func_number,))
-            self.module.main_body.insert(2, "print 'arg_number: %d'" % (self.arg_number,))
-            
+            self.module.main_body.append("print 'func_number: %d'" % (self.func_number,))
+            self.module.main_body.append("print 'arg_number: %d'" % (self.arg_number,))
+            self.module.main_body.append(loop)
+
             created_size = lopts["prog_size"] - self.prog_size
             refill = min(created_size, self.module_size)
 
