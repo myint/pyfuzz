@@ -66,7 +66,8 @@ def _main():
             code_file.write(code)
         
         clock_test = time.time()    
-        p_test = subprocess.Popen([options.test] + options.testargs.split() + ['code.py'],
+        test_command = [options.test] + options.testargs.split() + ['code.py']
+        p_test = subprocess.Popen(test_command,
                     stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout_test, stderr_test = p_test.communicate()
         clock_test = time.time() - clock_test
@@ -77,13 +78,15 @@ def _main():
             print "------- Encountered crash: Test -------"
             print code
             print "---------------------------------------"
+            print "Run %s to reproduce" % " ".join(test_command)
             failed_this_test = True
             if options.break_on_error:
                 return
 
        
         clock_base = time.time()
-        p_base = subprocess.Popen([options.base] + options.baseargs.split() + ['code.py'],
+        base_command = [options.base] + options.baseargs.split() + ['code.py']
+        p_base = subprocess.Popen(base_command,
                     stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout_base, stderr_base = p_base.communicate()
         clock_base = time.time() - clock_base
@@ -95,6 +98,7 @@ def _main():
             print "------- Encountered crash: Base -------"
             print code
             print "---------------------------------------"
+            print "Run %s to reproduce" % " ".join(base_command)
             failed_this_test = True
             if options.break_on_error:
                 return
