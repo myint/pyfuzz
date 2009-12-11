@@ -2,7 +2,7 @@ from codegen.arithgen import IntegerGen, gen_max_int_gen
 
 pgen_opts = {
     "module" : {"children" : [(1.0, "arith_integer"), (0.0, "arith_float")],
-                "mainloop" : 20000, "prog_size" : 5, "module_size" : 25,
+                "mainloop" : 25000, "prog_size" : 5, "module_size" : 25,
                },
 
 
@@ -113,17 +113,8 @@ class ProgGenerator(object):
     def arith_integer(self, opts, args_num, globals=[]):
         '''Insert a new arithmetic function using only integers'''
         gen = ArithIntegerGenerator(self.module, self, self.opts, self.rng)
-        f = gen.arith_integer(opts, args_num, globals)
+        f = gen.generate(opts, args_num, globals)
 
         return f
         
-    def loop_integer(self, opts, args_num, globals):
-        '''Insert a new function with a loop containing some integer operations'''
-        gen = LoopIntegerGenerator(self.module, self, self.opts, self.rng)
-        f = gen.loop_integer(opts, args_num, globals)
-
-        return f
-
-
-
 

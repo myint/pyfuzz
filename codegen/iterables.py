@@ -59,7 +59,7 @@ class YieldFunctionGenerator(FunctionGenerator):
     def generate_child(self, func, literals):
         '''Insert a function call to calculate some numbers'''
         gen = pgen.ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
-        c = gen.arith_integer(self.opts["arith_integer"], 2)
+        c = gen.generate(self.opts["arith_integer"], 2)
 
         self.module.content.insert(0, c)
         

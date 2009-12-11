@@ -39,7 +39,7 @@ class ArithIntegerGenerator(FunctionGenerator):
         branch = eval_branches(self.rng, opts["children"])
         if branch == "arith_integer":
             gen  = ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
-            c = gen.arith_integer(opts, 2)
+            c = gen.generate(opts, 2)
             self.module.content.insert(0, c)
 
             args = self.rng.sample(list(literals), 2)
@@ -51,7 +51,7 @@ class ArithIntegerGenerator(FunctionGenerator):
 
         if branch == ("arith_integer", "local"):
             gen  = ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
-            c = gen.arith_integer(opts, 2, list(literals))
+            c = gen.generate(opts, 2, list(literals))
 
             f.content.append(c)
 
@@ -65,7 +65,7 @@ class ArithIntegerGenerator(FunctionGenerator):
         if branch == "loop_integer":
             gen  = LoopIntegerGenerator(self.module, self.stats, self.opts, self.rng)
 
-            c = gen.loop_integer(self.opts['loop_integer'], 2, [])
+            c = gen.generate(self.opts['loop_integer'], 2, [])
             self.module.content.insert(0, c)
 
             args = self.rng.sample(list(literals), 2)
@@ -111,7 +111,7 @@ class ArithIntegerGenerator(FunctionGenerator):
 
 
 
-    def arith_integer(self, opts, args_num, globals=[]):
+    def generate(self, opts, args_num, globals=[]):
         '''Insert a new arithmetic function using only integers'''
         args = self.generate_arguments(args_num)
         
@@ -156,7 +156,7 @@ class LoopIntegerGenerator(FunctionGenerator):
         iter_gen = IterableGenerator(self.module, self.stats, self.opts, self.rng)
         return iter_gen.get_iterable(literals)
 
-    def loop_integer(self, opts, args_num, globals):
+    def generate(self, opts, args_num, globals):
         '''Insert a new function with a loop containing some integer operations'''
         args = self.generate_arguments(args_num)
  
@@ -235,7 +235,7 @@ class IntegerClosureGenerator(FunctionGenerator):
         self.module.content.insert(1, Assignment(c_var, "=", [CallStatement(gen, [])]))
  
         gen_ai = ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
-        f = gen_ai.arith_integer(self.opts["arith_integer"], args_num, [])
+        f = gen_ai.generate(self.opts["arith_integer"], args_num, [])
         
         self.module.content.insert(0, f)
         

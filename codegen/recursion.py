@@ -59,7 +59,7 @@ class TailRecursionGenerator(FunctionGenerator):
 
         # generate an arith_integer function
         gen  = pgen.ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
-        c = gen.arith_integer(self.opts["arith_integer"], 2)
+        c = gen.generate(self.opts["arith_integer"], 2)
         self.module.content.insert(0, c)
 
         args = self.rng.sample(["acc", "rest"] + numbers, 2)
