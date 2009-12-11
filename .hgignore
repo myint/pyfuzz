@@ -5,6 +5,7 @@ syntax: glob
 *.geany
 *.swp
 *.orig
+pyfuzz-output.*.p*
 
 .coverage/
 *,cover
