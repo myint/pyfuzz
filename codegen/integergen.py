@@ -2,7 +2,7 @@ from pygen.cgen import *
 from arithgen import ArithGen
 
 from utils import eval_branches, FunctionGenerator
-from iterables import IterableGenerator, ListComprehensionGenerator 
+from iterables import IterableGenerator, ListComprehensionGenerator
 from globalsgen import ChangeGlobalGenerator
 from recursion import TailRecursionGenerator
 
@@ -17,20 +17,20 @@ class ArithIntegerGenerator(FunctionGenerator):
     def generate_statement(self, opts, f, gen, literals, numbers):
         if opts["if"] > self.rng.random():
             result = self.next_variable()
-                   
+
             exp1 = gen.generate(list(literals) + numbers)
             exp2 = gen.generate(list(literals) + numbers)
-                    
+
             clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals))
-                   
-            i = IfStatement(clause, 
+
+            i = IfStatement(clause,
                 [Assignment(result, '=', [exp1])],
                 [Assignment(result, '=', [exp2])])
             f.content.append(i)
 
         else:
             result = self.next_variable()
-    
+
             exp = gen.generate(list(literals) + numbers)
             f.content.append(Assignment(result, '=', [exp]))
             literals.add(result)
@@ -61,7 +61,7 @@ class ArithIntegerGenerator(FunctionGenerator):
             call = Assignment(result, '=', [CallStatement(c, args)])
             f.content.append(call)
             literals.add(result)
-                   
+
         if branch == "loop_integer":
             gen  = LoopIntegerGenerator(self.module, self.stats, self.opts, self.rng)
 
@@ -77,16 +77,16 @@ class ArithIntegerGenerator(FunctionGenerator):
 
         if branch == "change_global":
             gen = ChangeGlobalGenerator(self.module, self.stats, self.opts, self.rng)
-            
+
             c = gen.generate(self.opts['change_global'], 0, [])
             self.module.content.insert(0, c)
-            
+
             result = self.next_variable()
-            
+
             call = Assignment(result, '=', [CallStatement(c, [])])
             f.content.append(call)
             literals.add(result)
-            
+
         if branch == "integer_closure":
             gen = IntegerClosureGenerator(self.module, self.stats, self.opts, self.rng)
             func = gen.generate(self.opts['integer_closure'], 2, [])
@@ -114,9 +114,9 @@ class ArithIntegerGenerator(FunctionGenerator):
     def generate(self, opts, args_num, globals=[]):
         '''Insert a new arithmetic function using only integers'''
         args = self.generate_arguments(args_num)
-        
+
         f = self.create_function(args)
- 
+
         literals = set(args) | set(globals)
 
         children = min(self.rng.randint(0, opts["max_children"]), self.stats.prog_size)
@@ -130,8 +130,8 @@ class ArithIntegerGenerator(FunctionGenerator):
         if branch_type == "thin":
             gen = ArithGen(2, self.rng)
             for i in xrange(self.rng.randint(10,25)):
-                self.generate_statement(opts, f, gen, literals, numbers)      
-               
+                self.generate_statement(opts, f, gen, literals, numbers)
+
         if branch_type == "fat":
             gen = ArithGen(20, self.rng)
             for i in xrange(self.rng.randint(0,5)):
@@ -159,12 +159,12 @@ class LoopIntegerGenerator(FunctionGenerator):
     def generate(self, opts, args_num, globals):
         '''Insert a new function with a loop containing some integer operations'''
         args = self.generate_arguments(args_num)
- 
+
         literals = set(args) | set(globals)
         numbers = [n.set_rng(self.rng) for n in opts["numbers"]]
-        
+
         f = self.create_function(args)
- 
+
         result = self.next_variable()
         literals.add(result)
 
@@ -174,23 +174,23 @@ class LoopIntegerGenerator(FunctionGenerator):
         literals.add(loop_var)
 
         l = ForLoop(loop_var, iter)
-        
+
         if opts["if"] > self.rng.random():
             exp1 = ArithGen(1, self.rng).generate(list(literals) + numbers)
             exp2 = ArithGen(1, self.rng).generate(list(literals) + numbers)
-            
+
             clause = " ".join([self.rng.choice(list(literals)), "<", self.rng.choice(list(literals))])
-            
-            i = IfStatement(clause, 
+
+            i = IfStatement(clause,
                             [Assignment(result, '+=', [exp1])],
                             [Assignment(result, '+=', [exp2])])
             l.content.append(i)
-            
+
         else:
             exp = ArithGen(1, self.rng).generate(list(literals) + numbers)
             l.content.append(Assignment(result, '+=', [exp]))
-            
-       
+
+
         f.content.append(Assignment(result, '=', ['0']))
         f.content.append(l)
         f.content.append("return " + result)
@@ -209,9 +209,9 @@ class IntegerClosureGenerator(FunctionGenerator):
         args = self.generate_arguments(args_num)
 
         closure = self.create_function(args)
-        
+
         gen = self.create_function([])
-        
+
         if opts["numbers"]:
             number_gen = self.rng.choice(opts["numbers"])
             number_gen.set_rng(self.rng)
@@ -219,7 +219,7 @@ class IntegerClosureGenerator(FunctionGenerator):
         else:
             number = 0
 
-        
+
         gen.content.extend(
             [
                 "closure = [%s]" % (number, ),
@@ -228,21 +228,21 @@ class IntegerClosureGenerator(FunctionGenerator):
                 "return func",
             ]
         )
-        
+
         c_var = self.next_variable()
-        
+
         self.module.content.insert(0, gen)
         self.module.content.insert(1, Assignment(c_var, "=", [CallStatement(gen, [])]))
- 
+
         gen_ai = ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
         f = gen_ai.generate(self.opts["arith_integer"], args_num, [])
-        
+
         self.module.content.insert(0, f)
-        
+
         closure.content.append(Assignment("closure[0]", "+=", [CallStatement(f, args)]))
         closure.content.append("return closure[0]")
-        
+
         return c_var
-        
+
 
 

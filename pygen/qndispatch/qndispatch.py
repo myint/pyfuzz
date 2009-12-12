@@ -52,7 +52,7 @@ def on(name):
             def when_decorate(func):
                 dispatcher.register(func, arg)
                 return decorator
-            
+
             return when_decorate
 
         decorator.when = when

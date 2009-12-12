@@ -29,11 +29,11 @@ class TailRecursionGenerator(FunctionGenerator):
         else:
             numbers = ["1", "2", "3", "4"]
 
-        
+
         func = self.create_function(["acc", "rest"])
 
         exp = ArithGen(1, self.rng).generate(["acc", "rest"] + numbers)
-        
+
         var = self.next_variable()
         func.content.append(Assignment(var, '=', [exp]))
 
@@ -41,7 +41,7 @@ class TailRecursionGenerator(FunctionGenerator):
             ["return %s" % (var,)],
             [Assignment("result", "=", [CallStatement(func, ["acc - 1", var])]),
             "return result"])
-            
+
         func.content.append(end)
         return func
 
@@ -72,7 +72,7 @@ class TailRecursionGenerator(FunctionGenerator):
             ["return %s" % (result,)],
             [Assignment("result", "=", [CallStatement(func, ["acc - 1", result])]),
             "return result"])
-            
+
         func.content.append(end)
         return func
 
@@ -87,11 +87,11 @@ class TailRecursionGenerator(FunctionGenerator):
         else:
             numbers = ["1", "2", "3", "4"]
 
-        
+
         func = self.create_function(["acc", "rest"])
 
         exp = ArithGen(5, self.rng).generate(["closure[0]", "acc", "rest"] + numbers)
-        
+
         var = self.next_variable()
         func.content.append(Assignment(var, '=', [exp]))
         func.content.append(Assignment("closure[0]", '+=', [var]))
@@ -100,7 +100,7 @@ class TailRecursionGenerator(FunctionGenerator):
             ["return %s" % (var,)],
             [Assignment("result", "=", [CallStatement(func, ["acc - 1", var])]),
             "return result"])
-            
+
         func.content.append(end)
         return func
 
@@ -108,9 +108,9 @@ class TailRecursionGenerator(FunctionGenerator):
     def generate(self, opts, args_num, globals):
         args = self.generate_arguments(args_num)
         func = self.create_function(args)
-        
+
         branch = eval_branches(self.rng, opts["type"])
-        
+
         if branch == "standard":
             rec = self.generate_standard_tail_call(opts)
         elif branch == "closure":
@@ -118,14 +118,14 @@ class TailRecursionGenerator(FunctionGenerator):
             rec = self.generate_closure_tail_call(opts)
         else:
             rec = self.generate_fcall_tail_call(opts)
-            
+
         func.content.append(rec)
-        
+
         func.content.extend(
             [Assignment("result", "=", [CallStatement(rec, ["10", "0"])]),
             "return result"])
-        
+
         self.module.content.append(func)
-        
+
         return func
 

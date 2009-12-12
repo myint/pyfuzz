@@ -43,18 +43,18 @@ def _main():
         seed = int(rng.random() * sys.maxint)
     print "Using random seed", seed
     rng.seed(seed)
-    
+
     pgen = ProgGenerator(pgen_opts, rng)
-    
+
     gen = CodeGenerator()
-    fix = FixGenerator() 
+    fix = FixGenerator()
     totaltime = 0.0
     time_test = 0.0
     time_base = 0.0
     failed_a_test = False
-    
+
     for i in xrange(options.iterations):
-        
+
         failed_this_test = False
         clock = time.time()
         mod = pgen.generate()
@@ -63,14 +63,14 @@ def _main():
         prefix = os.path.join(options.codepath, prefix)
         with open(prefix + ".pickle", "w") as code_pickle:
             pickle.dump(fixed, code_pickle)
-            
+
         code = gen.generate(fixed)
 
         code_path = prefix + ".py"
         with open(code_path, "w") as code_file:
             code_file.write(code)
-        
-        clock_test = time.time()    
+
+        clock_test = time.time()
         test_command = [options.test] + options.testargs.split() + [code_path]
         p_test = subprocess.Popen(test_command,
                     stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -88,7 +88,7 @@ def _main():
             if options.break_on_error:
                 return
 
-       
+
         clock_base = time.time()
         base_command = [options.base] + options.baseargs.split() + [code_path]
         p_base = subprocess.Popen(base_command,
@@ -97,7 +97,7 @@ def _main():
         clock_base = time.time() - clock_base
         time_base += clock_base
         totaltime += clock_base
-        
+
 
         if p_base.returncode < 0:
             print "------- Encountered crash: Base -------"
@@ -108,7 +108,7 @@ def _main():
             if options.break_on_error:
                 return
 
-           
+
 #        if clock_test < clock_base/2.0:
 #            print "------- Fast test -------"
 #            print "Test", clock_test
@@ -133,10 +133,10 @@ def _main():
                 return
 
 
-        
+
 #        if clock > 10.0:
 #            print code
-        
+
         failed_a_test |= failed_this_test
         if not failed_this_test:
             print "Iteration %s: PASS" % (i + 1,)

@@ -62,7 +62,7 @@ class YieldFunctionGenerator(FunctionGenerator):
         c = gen.generate(self.opts["arith_integer"], 2)
 
         self.module.content.insert(0, c)
-        
+
         args = self.rng.sample(literals, 2)
         result = self.next_variable()
         call = Assignment(result, '=', [CallStatement(c, args)])

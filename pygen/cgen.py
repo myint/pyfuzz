@@ -11,9 +11,9 @@ class Module(object):
     def __init__(self, main = False):
         self.has_main = main
         self.main_body = []
-        
+
         self.content = []
-        
+
 
 class ForLoop(object):
     def __init__(self, pointer, iterable, content = None):
@@ -23,8 +23,8 @@ class ForLoop(object):
             self.content = content
         else:
             self.content = []
-        
-        
+
+
 class IfStatement(object):
     def __init__(self, clause, true_content = None, false_content = None):
         self.clause = clause
@@ -51,7 +51,7 @@ class Function(object):
             self.content = content
         else:
             self.content = []
-        
+
 class CallStatement(object):
     def __init__(self, func, args):
         self.func = func
@@ -62,7 +62,7 @@ class Assignment(object):
         self.target = target
         self.operator = operator
         self.expression = expression
-        
+
 class Statement(object):
     pass
 
@@ -70,7 +70,7 @@ class Statement(object):
 class FixGenerator(object):
     def __init__(self):
         pass
-    
+
     def visit_block(self, block):
         fixed = []
         for stmt in block:
@@ -85,57 +85,57 @@ class FixGenerator(object):
             if callable(stmt):
                 fixed.append(stmt())
                 continue
-            
+
             fixed.append(self.visit(stmt))
         return fixed
-    
+
     def visit_args(self, args):
         return [self.visit_expr(arg) for arg in args]
 
-    def visit_expr(self, expr):   
+    def visit_expr(self, expr):
         if isinstance(expr, str):
             return expr
-        
+
         if isinstance(expr, list):
             return self.visit_args(expr)
 
         if callable(expr):
             return expr()
-         
+
         return self.visit(expr)
- 
+
     def generate(self, node):
         return self.visit(node)
-    
+
     @dispatch.on('node')
     def visit(self, node):
         pass
-    
+
     @visit.when(Module)
     def visit(self, node):
         m = Module(node.has_main)
         m.content = self.visit_block(node.content)
         m.main_body = self.visit_block(node.main_body)
-        
+
         return m
 
     @visit.when(Statement)
     def visit(self, node):
         return node.fix()
-    
+
     @visit.when(CallStatement)
     def visit(self, node):
-        stmt = CallStatement(node.func, 
+        stmt = CallStatement(node.func,
                     self.visit_args(node.args))
-        
-        return stmt 
+
+        return stmt
 
     @visit.when(Function)
     def visit(self, node):
         func = Function(node.name)
         func.args = self.visit_args(node.args)
         func.content = self.visit_block(node.content)
-        
+
         return func
 
     @visit.when(IfStatement)
@@ -143,16 +143,16 @@ class FixGenerator(object):
         stmt = IfStatement(node.clause)
         stmt.true_content = self.visit_block(node.true_content)
         stmt.false_content = self.visit_block(node.false_content)
-        
+
         return stmt
-        
+
     @visit.when(ForLoop)
     def visit(self, node):
-        stmt = ForLoop(node.pointer, node.iterable, 
+        stmt = ForLoop(node.pointer, node.iterable,
                        self.visit_block(node.content))
-        
+
         return stmt
-    
+
     @visit.when(Assignment)
     def visit(self, node):
         stmt = Assignment(node.target, node.operator, self.visit_block(node.expression))
@@ -161,11 +161,11 @@ class FixGenerator(object):
 class CodeGenerator(object):
     def __init__(self):
         pass
-    
+
     def generate(self, node):
         code = self.visit(0, node)
         return "\n".join(code)
-        
+
     def code(self, depth, line):
         code = []
         for i in xrange(depth):
@@ -173,9 +173,9 @@ class CodeGenerator(object):
         if isinstance(line, list):
             line = "".join(line)
         code.append(line)
-        
+
         return "".join(code)
-    
+
     def visit_block(self, depth, block):
         if len(block) == 0:
             return [self.code(depth+1, 'pass')]
@@ -188,7 +188,7 @@ class CodeGenerator(object):
             if callable(node):
                 content.append(self.code(depth+1, node()))
                 continue
-            
+
             content += self.visit(depth+1, node)
         return content
 
@@ -214,24 +214,24 @@ class CodeGenerator(object):
     def visit(self, depth, node):
         '''Generic visit function'''
         return []
-        
-       
+
+
     @visit.when(Statement)
     def visit(self, depth, node):
         return [self.code(depth, node.get())]
-       
+
     @visit.when(Module)
     def visit(self, depth, node):
         if depth != 0:
             raise CodeGenIndentException()
-    
+
         content = []
         for n in node.content:
             if isinstance(n, str):
                 content.append(self.code(depth, n))
                 continue
             content += self.visit(depth, n)
-    
+
         if node.has_main:
             content.append(self.code(depth, 'if __name__ == "__main__":'))
             content += self.visit_block(depth, node.main_body)
@@ -254,7 +254,7 @@ class CodeGenerator(object):
         content.append(self.code(depth, "else:"))
         content += self.visit_block(depth, node.false_content)
         return content
-        
+
 
     @visit.when(Function)
     def visit(self, depth, node):
@@ -271,7 +271,7 @@ class CodeGenerator(object):
     @visit.when(CallStatement)
     def visit(self, depth, node):
         args = ", ".join(self.visit_args(node.args))
-        
+
         if isinstance(node.func, basestring):
             fun = "".join([node.func, '(', args, ')'])
         else:

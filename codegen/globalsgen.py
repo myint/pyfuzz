@@ -10,7 +10,7 @@ import pgen
 
 class ChangeGlobalGenerator(FunctionGenerator):
     """
-    This generates some code to change a global 
+    This generates some code to change a global
     and test if the changed function is executed.
     """
     def __init__(self, module, stats, opts, rng):
@@ -22,14 +22,14 @@ class ChangeGlobalGenerator(FunctionGenerator):
 
     def generate_globalon(self, opts):
         f = self.create_function([])
-        
+
         if opts["numbers"]:
             gen = self.rng.choice(opts["numbers"])
             gen.set_rng(self.rng)
             number = gen()
         else:
             number = 1
-        
+
         f.content.append("global len")
         f.content.append("len = lambda x : %s" % (number,))
         return f

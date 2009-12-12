@@ -54,7 +54,7 @@ from utils import eval_branches
 
 from codegen.integergen import LoopIntegerGenerator, ArithIntegerGenerator
 
- 
+
 
 class ProgGenerator(object):
     def __init__(self, opts, rng):
@@ -77,7 +77,7 @@ class ProgGenerator(object):
         self.prog_size = lopts["prog_size"]
         self.module_size = lopts["module_size"] - self.prog_size
 
- 
+
         while self.module_size > 0 or self.prog_size > 0:
             main = []
 
@@ -96,7 +96,7 @@ class ProgGenerator(object):
                     main.append(Assignment('x', '=', ['5.0']))
                     main.append('print x,')
 
-            self.module.main_body.append("print 'prog_size: %d'" % 
+            self.module.main_body.append("print 'prog_size: %d'" %
                             (lopts["prog_size"] - self.prog_size,))
             self.module.main_body.append("print 'func_number: %d'" % (self.func_number,))
             self.module.main_body.append("print 'arg_number: %d'" % (self.arg_number,))
@@ -116,5 +116,5 @@ class ProgGenerator(object):
         f = gen.generate(opts, args_num, globals)
 
         return f
-        
+
 

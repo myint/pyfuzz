@@ -1,7 +1,7 @@
 import unittest
 
 from pgen import *
-
+from utils import FunctionGenerator
 
 class TestUtilFunctions(unittest.TestCase):
     def testEvalBranches(self):
@@ -13,7 +13,7 @@ class TestUtilFunctions(unittest.TestCase):
 
         result = eval_branches(rng, [(0.5, 0), (1.0, 1)])
         self.assertEqual(result, 1)
-    
+
 class TestFunctionGenerator(unittest.TestCase):
 
     def setUp(self):
@@ -33,7 +33,7 @@ class TestFunctionGenerator(unittest.TestCase):
         self.assertEqual(module.func_number, 1)
         self.assert_(f.name == "func0")
         self.assert_("args" in f.args)
- 
+
     def testGenerateArguments(self):
         class TestModule(object):
             pass
@@ -45,7 +45,7 @@ class TestFunctionGenerator(unittest.TestCase):
         fgen.stats = module
 
         args = fgen.generate_arguments(5)
-           
+
         self.assertEqual(len(args), 5)
         self.assert_("arg0" in args)
         self.assert_("arg4" in args)
@@ -66,10 +66,10 @@ class TestFunctionGenerator(unittest.TestCase):
         self.assertEqual("var0", var)
         self.assertEqual(module.arg_number, 1)
 
-       
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
-    
-    
+
+
