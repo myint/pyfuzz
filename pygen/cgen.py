@@ -6,6 +6,9 @@ class CodeGenException(Exception):
 class CodeGenIndentException(CodeGenException):
     pass
 
+class NotImplementedException(Exception):
+    pass
+
 class Module(object):
     '''Outermost Code block representing a Python Module. May include a main block'''
     def __init__(self, main = False):
@@ -64,7 +67,40 @@ class Assignment(object):
         self.expression = expression
 
 class Statement(object):
-    pass
+    """Generic statement. To be overridden."""
+
+    def get(self):
+        raise NotImplementedException
+
+    def fix(self):
+        raise NotImplementedException
+
+class Class(object):
+    def __init__(self, name, super = None, content = None):
+        self.name = name
+        if super:
+            self.super = super
+        else:
+            self.super = ['object']
+
+        if content:
+            self.content = content
+        else:
+            self.content = []
+
+class Method(object):
+    def __init__(self, name, args = None, content = None):
+        self.name = name
+
+        self.args = []
+        if args != None:
+            self.args = args
+
+        if content != None:
+            self.content = content
+        else:
+            self.content = []
+
 
 
 class FixGenerator(object):
@@ -137,6 +173,21 @@ class FixGenerator(object):
         func.content = self.visit_block(node.content)
 
         return func
+
+    @visit.when(Class)
+    def visit(self, node):
+        c = Class(node.name)
+        c.super = self.visit_args(node.super)
+        c.content = self.visit_block(node.content)
+
+        return c
+
+    @visit.when(Method)
+    def visit(self, node):
+        m = Method(node.name)
+        m.args = self.visit_args(node.args)
+        m.content = self.visit_block(node.content)
+        return m
 
     @visit.when(IfStatement)
     def visit(self, node):
@@ -268,6 +319,28 @@ class CodeGenerator(object):
         content += self.visit_block(depth, node.content)
         return content
 
+    @visit.when(Class)
+    def visit(self, depth, node):
+        superclasses = ", ".join(node.super)
+        c = "".join(['class ', node.name, '(', superclasses, '):'])
+        content = [self.code(depth, c)]
+        content += self.visit_block(depth, node.content)
+
+        return content
+
+    @visit.when(Method)
+    def visit(self, depth, node):
+        if node.args:
+            args = ", ".join(["self"] + node.args)
+        else:
+            args = "self"
+
+        fun = ''.join(['def ', node.name, '(', args, '):'])
+        content = [self.code(depth, fun)]
+        content += self.visit_block(depth, node.content)
+
+        return content
+
     @visit.when(CallStatement)
     def visit(self, depth, node):
         args = ", ".join(self.visit_args(node.args))
@@ -284,3 +357,4 @@ class CodeGenerator(object):
         if(len(node.expression) > 0):
             code += map(lambda x: x.strip(), self.visit_block(0, node.expression))
         return [self.code(depth, " ".join(code))]
+

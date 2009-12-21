@@ -143,6 +143,51 @@ class TestFunction(unittest.TestCase):
         self.assert_("StringStatement" in code)
         self.assert_("CallableStatement" in code)
 
+
+class TestClass(unittest.TestCase):
+    def setUp(self):
+        self.gen = CodeGenerator()
+        self.fix = FixGenerator()
+
+    def testEmptyClass(self):
+        n = Class('Test')
+        n = self.fix.generate(n)
+
+        code = self.gen.generate(n)
+        self.assert_("class Test" in code)
+        self.assert_("(object)" in code)
+        self.assert_("pass" in code)
+
+    def testClass(self):
+        n = Class('Test')
+        n.content.append('x = 5')
+        n = self.fix.generate(n)
+
+        code = self.gen.generate(n)
+        self.assert_("class Test" in code)
+        self.assert_("(object)" in code)
+        self.assert_("pass" not in code)
+
+    def testEmptyMethod(self):
+        n = Method('test')
+        n = self.fix.generate(n)
+
+        code = self.gen.generate(n)
+        self.assert_("def test" in code)
+        self.assert_("(self)" in code)
+        self.assert_("pass" in code)
+
+    def testEmptyMethod(self):
+        n = Method('test')
+        n.content.append('x = 5')
+        n = self.fix.generate(n)
+
+        code = self.gen.generate(n)
+        self.assert_("def test" in code)
+        self.assert_("(self)" in code)
+        self.assert_("pass" not in code)
+
+
 class TestCallStatement(unittest.TestCase):
     def setUp(self):
         self.gen = CodeGenerator()
