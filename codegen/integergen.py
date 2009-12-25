@@ -2,10 +2,11 @@ from pygen.cgen import *
 from arithgen import ArithGen
 
 from utils import eval_branches, FunctionGenerator
-from iterables import IterableGenerator, ListComprehensionGenerator
+#from iterables import IterableGenerator, ListComprehensionGenerator
+import iterables
 from globalsgen import ChangeGlobalGenerator
 from recursion import TailRecursionGenerator
-
+import classes
 
 class ArithIntegerGenerator(FunctionGenerator):
     def __init__(self, module, stats, opts, rng):
@@ -109,7 +110,11 @@ class ArithIntegerGenerator(FunctionGenerator):
             f.content.append(call)
             literals.add(result)
 
+        if branch == "classes":
+            gen = classes.ClassGenerator(self.module, self.stats, self.opts, self.rng)
+            result = gen.generate_inline(literals)
 
+            f.content.extend(result)
 
     def generate(self, opts, args_num, globals=[]):
         '''Insert a new arithmetic function using only integers'''
@@ -153,7 +158,7 @@ class LoopIntegerGenerator(FunctionGenerator):
         self.stats = stats
 
     def get_iterable(self, opts, literals):
-        iter_gen = IterableGenerator(self.module, self.stats, self.opts, self.rng)
+        iter_gen = iterables.IterableGenerator(self.module, self.stats, self.opts, self.rng)
         return iter_gen.get_iterable(literals)
 
     def generate(self, opts, args_num, globals):

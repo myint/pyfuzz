@@ -1,6 +1,7 @@
 from pygen.cgen import *
 from arithgen import ArithGen
-from iterables import IterableGenerator
+#from iterables import IterableGenerator
+import iterables
 
 from utils import eval_branches, FunctionGenerator
 
@@ -49,7 +50,7 @@ class ChangeGlobalGenerator(FunctionGenerator):
         self.module.content.insert(0, fon)
         self.module.content.insert(0, foff)
 
-        iter_gen = IterableGenerator(self.module, self.stats, self.opts, self.rng)
+        iter_gen = iterables.IterableGenerator(self.module, self.stats, self.opts, self.rng)
 
         if opts["numbers"]:
             numbers = []

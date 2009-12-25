@@ -14,6 +14,7 @@ pgen_opts = {
                         (1.0, "change_global"),
                         (1.0, "integer_closure"),
                         (1.0, "tail_recursion"),
+                        (1.0, "classes"),
                         ],
                 "max_children" : 5,
                 "numbers" : [gen_max_int_gen(), IntegerGen(-1000, 1000)],

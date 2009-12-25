@@ -1,6 +1,5 @@
 from pygen.cgen import *
 from arithgen import ArithGen
-from iterables import IterableGenerator
 
 from utils import eval_branches, FunctionGenerator
 

@@ -26,4 +26,14 @@ class FunctionGenerator(object):
         self.stats.func_number += 1
         return f
 
+    def create_class(self):
+        c = Class("class%d" % (self.stats.func_number,))
+        self.stats.func_number += 1
+        return c
+
+    def create_method(self, args):
+        m = Method("func%d" % (self.stats.func_number,), args)
+        self.stats.func_number += 1
+        return m
+
 
