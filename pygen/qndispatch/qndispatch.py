@@ -27,7 +27,7 @@ class Dispatcher(object):
             if isinstance(arg, reg_arg):
                 return reg_func
 
-        raise InvalidArgException("No function found.")
+        raise InvalidArgException("No function found for type %s." % str(type(arg)))
 
     def register(self, func, arg):
         '''Register a new function with the dispatcher'''
