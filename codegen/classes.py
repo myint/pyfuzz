@@ -20,7 +20,7 @@ class ClassGenerator(FunctionGenerator):
 
         self.branches = [
             (1.0, self.generate_monomorphic),
-#            (),
+            (1.0, self.generate_polymorphic),
         ]
 
     def get_iterable(self, literals):
@@ -29,6 +29,10 @@ class ClassGenerator(FunctionGenerator):
 
 
     def generate_inline(self, literals):
+        branch = eval_branches(self.rng, self.branches)
+        return branch(literals)
+
+    def generate_class_function(self):
         c = self.create_class()
         self.module.content.insert(0, c)
 
@@ -36,13 +40,13 @@ class ClassGenerator(FunctionGenerator):
         m = self.create_method(args)
 
         c.content.append(m)
-
-        branch = eval_branches(self.rng, self.branches)
-        return branch(c, m, literals)
-        
+        return c, m
 
 
-    def generate_monomorphic(self, c, m, literals):
+    def generate_monomorphic(self, literals):
+        """Generates a monomorphic callsite"""
+        c, m = self.generate_class_function()
+
         result = []
 
         class_var = self.next_variable()
@@ -62,5 +66,34 @@ class ClassGenerator(FunctionGenerator):
         return result
 
 
+    def generate_polymorphic(self, literals, use_duck_typing=True):
+        """Generate a polymorphic callsite"""
+        c, m = self.generate_class_function()
+        c_super, m_super = self.generate_class_function()
+        m_super.name = m.name
 
+        # test duck typing and class polymorphism
+        if not use_duck_typing or self.rng.random() < 0.5:
+            c.super = [c_super.name]
+            if self.rng.random() < 0.5:
+                c.content.remove(m)
+
+        loop_var = self.next_variable()
+        iter = self.get_iterable(literals)
+
+        class_var = self.next_variable()
+        clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals))
+        i = IfStatement(clause,
+            [Assignment(class_var, '=', [CallStatement(c, [])])],
+            [Assignment(class_var, '=', [CallStatement(c_super, [])])]
+        )
+        result = [i]
+
+        l = ForLoop(loop_var, iter)
+        result.append(l)
+        loop_literals = list(literals) + [loop_var]
+
+        args = [self.rng.choice(loop_literals) for i in m.args]
+        l.content.append(CallStatement(class_var + '.' + m.name, args))
+        return result
 
