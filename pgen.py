@@ -25,17 +25,6 @@ pgen_opts = {
                 "numbers" : [IntegerGen(-10, 10)],
                 "if" : 0.10,
                },
-    "list_comp_small_int" : {
-                "numbers" : [IntegerGen(-10, 10)],
-                "type" : [(1.0, "thin"), (1.0, "fat")],
-               },
-    "iter_gen" : {
-                "type" : [(1.0, "xrange"), (1.0, "range")],
-                "children" : [(1.0, "list_comp_gen"), (1.0, "list_comp_list"), (1.0, "yield_func")],
-               },
-    "yieldfunction" : {
-                "numbers" : [gen_max_int_gen(), IntegerGen(-1000, 1000)],
-               },
     "change_global" : {
                 "numbers" : [IntegerGen(-10, 10)],
                },

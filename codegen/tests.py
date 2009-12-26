@@ -5,7 +5,7 @@ from classes import ClassGenerator
 
 class Stats(object):
     arg_number = 0
-    prog_size = 100
+    prog_size = 0
 
 class TestClassesGenerator(unittest.TestCase):
 
@@ -17,7 +17,7 @@ class TestClassesGenerator(unittest.TestCase):
         return '\n'.join(result)
 
     def setUp(self):
-        self.opts = {'iter_gen' : {'type' : [(1.0, "xrange")], 'children' : []}}
+        self.opts = {}
         self.module = {}
         self.stats = Stats()
 

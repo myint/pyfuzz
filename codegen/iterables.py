@@ -1,7 +1,6 @@
 
 from pygen.cgen import *
-from arithgen import ArithGen
-
+from arithgen import ArithGen, IntegerGen, gen_max_int_gen
 from utils import eval_branches, FunctionGenerator
 
 import pgen
@@ -14,11 +13,9 @@ class IterableGenerator(object):
         self.stats = stats
 
     def get_iterable(self, literals):
-        opts = self.opts["iter_gen"]
-
-        types = list(opts["type"]) # iterables that dont require size
+        types = [(1.0, "xrange"), (1.0, "range")] # iterables that dont require size
         if self.stats.prog_size > 0:
-            types = types + opts["children"]
+            types = types + [(1.0, "list_comp_gen"), (1.0, "list_comp_list"), (1.0, "yield_func")]
 
         branch = eval_branches(self.rng, types)
 
@@ -33,13 +30,13 @@ class IterableGenerator(object):
             self.stats.prog_size -= 1
 
             gen = ListComprehensionGenerator(self.module, self.stats, self.opts, self.rng)
-            return [gen.get_generator(self.opts["list_comp_small_int"], literals)]
+            return [gen.get_generator(literals)]
 
         if branch == "list_comp_list":
             self.stats.prog_size -= 1
 
             gen = ListComprehensionGenerator(self.module, self.stats, self.opts, self.rng)
-            return [gen.get_list(self.opts["list_comp_small_int"], literals)]
+            return [gen.get_list(literals)]
 
         if branch == "yield_func":
             self.stats.prog_size -= 1
@@ -73,13 +70,11 @@ class YieldFunctionGenerator(FunctionGenerator):
     def generate(self, args_num, pliterals):
         '''Returns a CallStatement'''
 
-        opts = self.opts["yieldfunction"]
-
         args = self.generate_arguments(args_num)
         f = self.create_function(args)
         self.module.content.insert(0, f)
 
-        literals = list(args) + [n.set_rng(self.rng) for n in opts["numbers"]]
+        literals = list(args) + [n.set_rng(self.rng) for n in [gen_max_int_gen(), IntegerGen(-1000, 1000)]]
 
         if self.stats.prog_size > 0:
             self.generate_child(f, literals)
@@ -105,9 +100,9 @@ class ListComprehensionGenerator(FunctionGenerator):
         self.rng = rng
         self.stats = stats
 
-    def get_expression(self, opts, literals):
-        literals = list(literals) + [n.set_rng(self.rng) for n in opts["numbers"]]
-        branch = eval_branches(self.rng, opts["type"])
+    def get_expression(self, literals):
+        literals = list(literals) + [n.set_rng(self.rng) for n in [IntegerGen(-10, 10)]]
+        branch = eval_branches(self.rng, [(1.0, "thin"), (1.0, "fat")])
 
         iterable = IterableGenerator(self.module, self.stats, self.opts, self.rng).get_iterable(literals)
 
@@ -118,8 +113,8 @@ class ListComprehensionGenerator(FunctionGenerator):
             exp = ArithGen(1, self.rng).generate(literals)
         return ["%s for i in " % (exp, ), iterable]
 
-    def get_generator(self, opts, literals):
-        return ["(", self.get_expression(opts, literals), ")"]
-    def get_list(self, opts, literals):
-        return ["[", self.get_expression(opts, literals), "]"]
+    def get_generator(self, literals):
+        return ["(", self.get_expression(literals), ")"]
+    def get_list(self, literals):
+        return ["[", self.get_expression(literals), "]"]
 
