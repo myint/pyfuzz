@@ -60,8 +60,15 @@ class ClassGenerator(FunctionGenerator):
         
         loop_literals = list(literals) + [loop_var]
 
+
         args = [self.rng.choice(loop_literals) for i in m.args]
-        l.content.append(CallStatement(class_var + '.' + m.name, args))
+        if self.rng.random() < 0.5:
+            func = class_var + '.' + m.name
+        else: # Sometimes copy the function into a variable
+            func = self.next_variable()
+            l.content.append(Assignment(func, '=', [class_var + '.' + m.name]))
+
+        l.content.append(CallStatement(func, args))
 
         return result
 
@@ -93,7 +100,14 @@ class ClassGenerator(FunctionGenerator):
         result.append(l)
         loop_literals = list(literals) + [loop_var]
 
+        if self.rng.random() < 0.5:
+            func = class_var + '.' + m.name
+        else: # Sometimes copy the function into a variable
+            func = self.next_variable()
+            l.content.append(Assignment(func, '=', [class_var + '.' + m.name]))
+
         args = [self.rng.choice(loop_literals) for i in m.args]
-        l.content.append(CallStatement(class_var + '.' + m.name, args))
+        l.content.append(CallStatement(func, args))
         return result
+
 
