@@ -47,7 +47,7 @@ class TestClassesGenerator(unittest.TestCase):
         self.assert_('= class' in code)
 
     def testPolymorphic(self):
-        result = self.gen.generate_polymorphic(['0', '1'], use_duck_typing=False)
+        result = self.gen.generate_polymorphic(['0', '1'])
         result.extend(self.module.content)
 
         code = self.codegen(result)
@@ -56,4 +56,14 @@ class TestClassesGenerator(unittest.TestCase):
         self.assert_('.func' in code) # method call
         self.assert_('= class' in code) # object instantiation
         self.assert_('(class' in code) # inheritance
+
+    def testDuck(self):
+        result = self.gen.generate_duck(['0', '1'])
+        result.extend(self.module.content)
+
+        code = self.codegen(result)
+
+        self.assert_('for' in code)
+        self.assert_('.func' in code) # method call
+        self.assert_('= class' in code) # object instantiation
 

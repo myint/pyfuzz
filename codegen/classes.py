@@ -73,17 +73,14 @@ class ClassGenerator(FunctionGenerator):
         return result
 
 
-    def generate_polymorphic(self, literals, use_duck_typing=True):
+    def generate_polymorphic(self, literals):
         """Generate a polymorphic callsite"""
         c, m = self.generate_class_function()
         c_super, m_super = self.generate_class_function()
         m_super.name = m.name
 
         # test duck typing and class polymorphism
-        if not use_duck_typing or self.rng.random() < 0.5:
-            c.super = [c_super.name]
-            if self.rng.random() < 0.5:
-                c.content.remove(m)
+        c.super = [c_super.name]
 
         loop_var = self.next_variable()
         iter = self.get_iterable(literals)
@@ -110,4 +107,38 @@ class ClassGenerator(FunctionGenerator):
         l.content.append(CallStatement(func, args))
         return result
 
+
+    def generate_duck(self, literals):
+        """Generate a duck typing callsite"""
+        c, m = self.generate_class_function()
+        c_super, m_super = self.generate_class_function()
+        m_super.name = m.name
+
+        loop_var = self.next_variable()
+        iter = self.get_iterable(literals)
+
+        class_var = self.next_variable()
+        clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals))
+        i = IfStatement(clause,
+            [Assignment(class_var, '=', [CallStatement(c, [])])],
+            [Assignment(class_var, '=', [CallStatement(c_super, [])])]
+        )
+        result = [i]
+
+        l = ForLoop(loop_var, iter)
+        result.append(l)
+        loop_literals = list(literals) + [loop_var]
+
+        if self.rng.random() < 0.5:
+            func = class_var + '.' + m.name
+        else: # Sometimes copy the function into a variable
+            func = self.next_variable()
+            l.content.append(Assignment(func, '=', [class_var + '.' + m.name]))
+
+        args = [self.rng.choice(loop_literals) for i in m.args]
+        l.content.append(CallStatement(func, args))
+        return result
+
+    def generate_super(self, literals):
+        pass
 
