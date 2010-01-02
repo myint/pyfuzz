@@ -21,18 +21,14 @@ class ClassGenerator(FunctionGenerator):
         self.branches = [
             (1.0, self.generate_monomorphic),
             (1.0, self.generate_polymorphic),
+            (1.0, self.generate_duck),
         ]
 
     def get_iterable(self, literals):
         iter_gen = iterables.IterableGenerator(self.module, self.stats, self.opts, self.rng)
         return iter_gen.get_iterable(literals)
 
-
-    def generate_inline(self, literals):
-        branch = eval_branches(self.rng, self.branches)
-        return branch(literals)
-
-    def generate_class_function(self):
+    def make_class_function(self):
         c = self.create_class()
         self.module.content.insert(0, c)
 
@@ -42,48 +38,49 @@ class ClassGenerator(FunctionGenerator):
         c.content.append(m)
         return c, m
 
+    def make_loop(self, literals, class_var, m):
+        loop_var = self.next_variable()
+        iter = self.get_iterable(literals)
+ 
+        l = ForLoop(loop_var, iter)
+
+        loop_literals = list(literals) + [loop_var]
+
+        args = [self.rng.choice(loop_literals) for i in m.args]
+        if self.rng.random() < 0.5:
+            func = class_var + '.' + m.name
+        else: # Sometimes copy the function into a variable
+            func = self.next_variable()
+            l.content.append(Assignment(func, '=', [class_var + '.' + m.name]))
+
+        l.content.append(CallStatement(func, args))
+
+        return l
+
+    def generate_inline(self, literals):
+        branch = eval_branches(self.rng, self.branches)
+        return branch(literals)
 
     def generate_monomorphic(self, literals):
         """Generates a monomorphic callsite"""
-        c, m = self.generate_class_function()
+        c, m = self.make_class_function()
 
         result = []
 
         class_var = self.next_variable()
         result.append(Assignment(class_var, '=', [CallStatement(c, [])]))
 
-        loop_var = self.next_variable()
-        iter = self.get_iterable(literals)
- 
-        l = ForLoop(loop_var, iter)
+        l = self.make_loop(literals, class_var, m)
         result.append(l)
-        
-        loop_literals = list(literals) + [loop_var]
-
-
-        args = [self.rng.choice(loop_literals) for i in m.args]
-        if self.rng.random() < 0.5:
-            func = class_var + '.' + m.name
-        else: # Sometimes copy the function into a variable
-            func = self.next_variable()
-            l.content.append(Assignment(func, '=', [class_var + '.' + m.name]))
-
-        l.content.append(CallStatement(func, args))
-
         return result
-
 
     def generate_polymorphic(self, literals):
         """Generate a polymorphic callsite"""
-        c, m = self.generate_class_function()
-        c_super, m_super = self.generate_class_function()
+        c, m = self.make_class_function()
+        c_super, m_super = self.make_class_function()
         m_super.name = m.name
 
-        # test duck typing and class polymorphism
         c.super = [c_super.name]
-
-        loop_var = self.next_variable()
-        iter = self.get_iterable(literals)
 
         class_var = self.next_variable()
         clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals))
@@ -93,29 +90,16 @@ class ClassGenerator(FunctionGenerator):
         )
         result = [i]
 
-        l = ForLoop(loop_var, iter)
+        l = self.make_loop(literals, class_var, m)
         result.append(l)
-        loop_literals = list(literals) + [loop_var]
 
-        if self.rng.random() < 0.5:
-            func = class_var + '.' + m.name
-        else: # Sometimes copy the function into a variable
-            func = self.next_variable()
-            l.content.append(Assignment(func, '=', [class_var + '.' + m.name]))
-
-        args = [self.rng.choice(loop_literals) for i in m.args]
-        l.content.append(CallStatement(func, args))
         return result
-
 
     def generate_duck(self, literals):
         """Generate a duck typing callsite"""
-        c, m = self.generate_class_function()
-        c_super, m_super = self.generate_class_function()
+        c, m = self.make_class_function()
+        c_super, m_super = self.make_class_function()
         m_super.name = m.name
-
-        loop_var = self.next_variable()
-        iter = self.get_iterable(literals)
 
         class_var = self.next_variable()
         clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals))
@@ -125,20 +109,9 @@ class ClassGenerator(FunctionGenerator):
         )
         result = [i]
 
-        l = ForLoop(loop_var, iter)
+        l = self.make_loop(literals, class_var, m)
         result.append(l)
-        loop_literals = list(literals) + [loop_var]
 
-        if self.rng.random() < 0.5:
-            func = class_var + '.' + m.name
-        else: # Sometimes copy the function into a variable
-            func = self.next_variable()
-            l.content.append(Assignment(func, '=', [class_var + '.' + m.name]))
-
-        args = [self.rng.choice(loop_literals) for i in m.args]
-        l.content.append(CallStatement(func, args))
         return result
 
-    def generate_super(self, literals):
-        pass
 
