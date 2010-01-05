@@ -1,5 +1,5 @@
 from pygen.cgen import *
-from arithgen import ArithGen
+from arithgen import ArithGen, gen_max_int_gen
 import iterables
 
 from utils import eval_branches, FunctionGenerator
@@ -57,6 +57,28 @@ class ClassGenerator(FunctionGenerator):
 
         return l
 
+    def make_fill(self, m):
+        filled = [(1.0, self.fill_zero),
+                  (1.0, self.fill_some_arith)]
+
+        branch = eval_branches(self.rng, filled)
+        branch(m)
+
+    def fill_zero(self, m):
+        m.content.append('return 0')
+
+    def fill_some_arith(self, m):
+        def low_numbers():
+            return str(self.rng.randint(-1,1))
+
+        numbers = [gen_max_int_gen().set_rng(self.rng), low_numbers]
+        exp = ArithGen(5, self.rng).generate(m.args + numbers)
+
+        m.content.extend([
+            Assignment('result', '=', [exp]),
+            'return result',
+        ])
+
     def generate_inline(self, literals):
         branch = eval_branches(self.rng, self.branches)
         return branch(literals)
@@ -64,6 +86,8 @@ class ClassGenerator(FunctionGenerator):
     def generate_monomorphic(self, literals):
         """Generates a monomorphic callsite"""
         c, m = self.make_class_function()
+
+        self.make_fill(m)
 
         result = []
 
@@ -81,6 +105,9 @@ class ClassGenerator(FunctionGenerator):
         m_super.name = m.name
 
         c.super = [c_super.name]
+
+        self.make_fill(m)
+        self.make_fill(m_super)
 
         class_var = self.next_variable()
         clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals))
@@ -100,6 +127,9 @@ class ClassGenerator(FunctionGenerator):
         c, m = self.make_class_function()
         c_super, m_super = self.make_class_function()
         m_super.name = m.name
+
+        self.make_fill(m)
+        self.make_fill(m_super)
 
         class_var = self.next_variable()
         clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals))

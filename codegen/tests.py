@@ -13,6 +13,21 @@ class TModule(object):
     def __init__(self):
         self.content = []
 
+class TRng(object):
+    def __init__(self, tc):
+        self.tc = tc
+
+    def random(self):
+        return 0.0
+
+    def randint(self, a, b):
+        self.tc.assert_(a <= b)
+        return a
+
+    def choice(self, seq):
+        self.tc.assert_(len(seq) > 0)
+        return seq[0]
+
 class TestClassesGenerator(unittest.TestCase):
 
     def codegen(self, l):
@@ -31,10 +46,19 @@ class TestClassesGenerator(unittest.TestCase):
         self.module = TModule()
         self.stats = TStats()
 
-        self.gen = ClassGenerator(self.module, self.stats, self.opts)
+        self.gen = ClassGenerator(self.module, self.stats, self.opts, TRng(self))
 
         self.fgen = FixGenerator()
         self.cgen = CodeGenerator()
+
+    def testFillSomeArith(self):
+        m = Method("M", ['arg'])
+        self.gen.fill_some_arith(m)
+
+        code = self.codegen([m])
+        self.assert_('def M' in code)
+        self.assert_('return result' in code)
+        self.assert_('result =' in code)
 
     def testMonomorphic(self):
         result = self.gen.generate_monomorphic(['0', '1'])
@@ -45,6 +69,7 @@ class TestClassesGenerator(unittest.TestCase):
         self.assert_('for' in code)
         self.assert_('.func' in code)
         self.assert_('= class' in code)
+        self.assert_('return 0' in code)
 
     def testPolymorphic(self):
         result = self.gen.generate_polymorphic(['0', '1'])
