@@ -1,0 +1,7 @@
+*.pyc
+*.db
+*.geany
+*.swp
+*.orig
+pyfuzz-output.*.p*
+.coverage/
