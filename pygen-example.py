@@ -1,18 +1,15 @@
 from __future__ import print_function
-from pygen.cgen import *
-
-
-from pgen import *
 
 import sys
 import subprocess
 import time
 import pickle
 import os
-
 import random
-
 from optparse import OptionParser
+
+from pygen.cgen import CodeGenerator, FixGenerator
+from pgen import pgen_opts, ProgGenerator
 
 
 def _main():
