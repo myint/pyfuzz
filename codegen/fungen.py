@@ -39,7 +39,6 @@ class FunWithFunctions(object):
                           self.rng.choice(
                           allfuncs),
                           self.variables),
-# CallStatement(self.rng.choice(allfuncs), self.variables),
                           ]
                          )
             newfuncs.append(f)

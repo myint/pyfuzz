@@ -148,17 +148,6 @@ def _main():
             if options.break_on_error:
                 return
 
-#        if clock_test < clock_base/2.0:
-#            print "------- Fast test -------"
-#            print "Test", clock_test
-#            print "Base", clock_base
-# print code
-#
-#        if clock_test > clock_base*2.0:
-#            print "------- Fast base -------"
-#            print "Test", clock_test
-#            print "Base", clock_base
-# print code
         if stdout_base != stdout_test:
             print("------- Encountered different result --------")
             print("Test %s" % (stdout_test, ))
@@ -171,8 +160,6 @@ def _main():
             if options.break_on_error:
                 return
 
-#        if clock > 10.0:
-#            print code
         failed_a_test |= failed_this_test
         if not failed_this_test:
             print("Iteration %s: PASS" % (i + 1,))

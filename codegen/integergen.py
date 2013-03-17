@@ -2,7 +2,6 @@ from pygen.cgen import *
 from .arithgen import ArithGen
 
 from utils import eval_branches, FunctionGenerator
-# from iterables import IterableGenerator, ListComprehensionGenerator
 from . import iterables
 from .globalsgen import ChangeGlobalGenerator
 from .recursion import TailRecursionGenerator
