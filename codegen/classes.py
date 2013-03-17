@@ -1,6 +1,5 @@
 from pygen.cgen import *
 from .arithgen import ArithGen, gen_max_int_gen
-from . import iterables
 
 from utils import eval_branches, FunctionGenerator
 
@@ -26,6 +25,7 @@ class ClassGenerator(FunctionGenerator):
         ]
 
     def get_iterable(self, literals):
+        from . import iterables
         iter_gen = iterables.IterableGenerator(
             self.module,
             self.stats,

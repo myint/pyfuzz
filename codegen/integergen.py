@@ -2,7 +2,6 @@ from pygen.cgen import *
 from .arithgen import ArithGen
 
 from utils import eval_branches, FunctionGenerator
-from . import iterables
 from .globalsgen import ChangeGlobalGenerator
 from .recursion import TailRecursionGenerator
 from . import classes
@@ -194,6 +193,7 @@ class LoopIntegerGenerator(FunctionGenerator):
         self.stats = stats
 
     def get_iterable(self, opts, literals):
+        from . import iterables
         iter_gen = iterables.IterableGenerator(
             self.module,
             self.stats,

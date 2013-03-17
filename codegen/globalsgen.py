@@ -1,6 +1,5 @@
 from pygen.cgen import *
 from .arithgen import ArithGen
-from . import iterables
 
 from utils import eval_branches, FunctionGenerator
 
@@ -46,6 +45,7 @@ class ChangeGlobalGenerator(FunctionGenerator):
         self.module.content.insert(0, fon)
         self.module.content.insert(0, foff)
 
+        from . import iterables
         iter_gen = iterables.IterableGenerator(
             self.module,
             self.stats,
