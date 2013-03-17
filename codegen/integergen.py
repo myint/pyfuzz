@@ -4,7 +4,6 @@ from .arithgen import ArithGen
 from utils import eval_branches, FunctionGenerator
 from .globalsgen import ChangeGlobalGenerator
 from .recursion import TailRecursionGenerator
-from . import classes
 
 
 class ArithIntegerGenerator(FunctionGenerator):
@@ -139,6 +138,7 @@ class ArithIntegerGenerator(FunctionGenerator):
             literals.add(result)
 
         if branch == "classes":
+            from . import classes
             gen = classes.ClassGenerator(
                 self.module,
                 self.stats,
