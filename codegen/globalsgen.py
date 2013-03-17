@@ -1,9 +1,7 @@
-from pygen.cgen import *
-from .arithgen import ArithGen
+from pygen.cgen import Assignment, CallStatement
 
-from utils import eval_branches, FunctionGenerator
+from utils import FunctionGenerator
 
-import pgen
 
 
 class ChangeGlobalGenerator(FunctionGenerator):

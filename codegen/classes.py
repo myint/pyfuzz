@@ -3,7 +3,6 @@ from .arithgen import ArithGen, gen_max_int_gen
 
 from utils import eval_branches, FunctionGenerator
 
-import pgen
 
 import random
 

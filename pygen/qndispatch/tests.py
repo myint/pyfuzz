@@ -11,7 +11,6 @@ class DispatchTest(unittest.TestCase):
             @qndispatch.on("name")
             def test(self, name):
                 self.fail("Illegal call to dispatch.on function")
-                pass
 
             @test.when(str)
             def test(self, name):
@@ -34,7 +33,6 @@ class DispatchTest(unittest.TestCase):
                 @qndispatch.on("name")
                 def test(self, name):
                     self.fail("Illegal call to dispatch.on function")
-                    pass
 
                 @test.when(str)
                 def test(self, name, mismatch):
