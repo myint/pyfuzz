@@ -1,13 +1,13 @@
 from pygen.cgen import *
-from arithgen import ArithGen
+from .arithgen import ArithGen
 
 from utils import eval_branches, FunctionGenerator
 
 import pgen
 
 
-
 class TailRecursionGenerator(FunctionGenerator):
+
     """
     This generates some code to test tail recursion handling.
     """
@@ -17,17 +17,15 @@ class TailRecursionGenerator(FunctionGenerator):
         self.rng = rng
         self.stats = stats
 
-
     def generate_standard_tail_call(self, opts):
         if opts["numbers"]:
             numbers = []
-            for i in xrange(4):
+            for i in range(4):
                 gen = self.rng.choice(opts["numbers"])
                 gen.set_rng(self.rng)
                 numbers.append(gen())
         else:
             numbers = ["1", "2", "3", "4"]
-
 
         func = self.create_function(["acc", "rest"])
 
@@ -37,9 +35,10 @@ class TailRecursionGenerator(FunctionGenerator):
         func.content.append(Assignment(var, '=', [exp]))
 
         end = IfStatement("acc == 0",
-            ["return %s" % (var,)],
-            [Assignment("result", "=", [CallStatement(func, ["acc - 1", var])]),
-            "return result"])
+                          ["return %s" % (var,)],
+                          [Assignment(
+                           "result", "=", [CallStatement(func, ["acc - 1", var])]),
+                           "return result"])
 
         func.content.append(end)
         return func
@@ -47,7 +46,7 @@ class TailRecursionGenerator(FunctionGenerator):
     def generate_fcall_tail_call(self, opts):
         if opts["numbers"]:
             numbers = []
-            for i in xrange(4):
+            for i in range(4):
                 gen = self.rng.choice(opts["numbers"])
                 gen.set_rng(self.rng)
                 numbers.append(gen())
@@ -57,7 +56,11 @@ class TailRecursionGenerator(FunctionGenerator):
         func = self.create_function(["acc", "rest"])
 
         # generate an arith_integer function
-        gen  = pgen.ArithIntegerGenerator(self.module, self.stats, self.opts, self.rng)
+        gen = pgen.ArithIntegerGenerator(
+            self.module,
+            self.stats,
+            self.opts,
+            self.rng)
         c = gen.generate(self.opts["arith_integer"], 2)
         self.module.content.insert(0, c)
 
@@ -68,41 +71,44 @@ class TailRecursionGenerator(FunctionGenerator):
         func.content.append(call)
 
         end = IfStatement("acc == 0",
-            ["return %s" % (result,)],
-            [Assignment("result", "=", [CallStatement(func, ["acc - 1", result])]),
-            "return result"])
+                          ["return %s" % (result,)],
+                          [Assignment(
+                           "result", "=", [CallStatement(func, ["acc - 1", result])]),
+                           "return result"])
 
         func.content.append(end)
         return func
 
-
     def generate_closure_tail_call(self, opts):
         if opts["numbers"]:
             numbers = []
-            for i in xrange(4):
+            for i in range(4):
                 gen = self.rng.choice(opts["numbers"])
                 gen.set_rng(self.rng)
                 numbers.append(gen())
         else:
             numbers = ["1", "2", "3", "4"]
 
-
         func = self.create_function(["acc", "rest"])
 
-        exp = ArithGen(5, self.rng).generate(["closure[0]", "acc", "rest"] + numbers)
+        exp = ArithGen(
+            5,
+            self.rng).generate(["closure[0]",
+                                "acc",
+                                "rest"] + numbers)
 
         var = self.next_variable()
         func.content.append(Assignment(var, '=', [exp]))
         func.content.append(Assignment("closure[0]", '+=', [var]))
 
         end = IfStatement("acc == 0",
-            ["return %s" % (var,)],
-            [Assignment("result", "=", [CallStatement(func, ["acc - 1", var])]),
-            "return result"])
+                          ["return %s" % (var,)],
+                          [Assignment(
+                           "result", "=", [CallStatement(func, ["acc - 1", var])]),
+                           "return result"])
 
         func.content.append(end)
         return func
-
 
     def generate(self, opts, args_num, globals):
         args = self.generate_arguments(args_num)
@@ -122,9 +128,8 @@ class TailRecursionGenerator(FunctionGenerator):
 
         func.content.extend(
             [Assignment("result", "=", [CallStatement(rec, ["10", "0"])]),
-            "return result"])
+             "return result"])
 
         self.module.content.append(func)
 
         return func
-

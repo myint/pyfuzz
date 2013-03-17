@@ -1,6 +1,6 @@
 from pygen.cgen import *
-from arithgen import ArithGen, gen_max_int_gen
-import iterables
+from .arithgen import ArithGen, gen_max_int_gen
+from . import iterables
 
 from utils import eval_branches, FunctionGenerator
 
@@ -10,6 +10,7 @@ import random
 
 
 class ClassGenerator(FunctionGenerator):
+
     def __init__(self, module, stats, opts, rng=None):
         self.opts = opts
         self.module = module
@@ -25,7 +26,11 @@ class ClassGenerator(FunctionGenerator):
         ]
 
     def get_iterable(self, literals):
-        iter_gen = iterables.IterableGenerator(self.module, self.stats, self.opts, self.rng)
+        iter_gen = iterables.IterableGenerator(
+            self.module,
+            self.stats,
+            self.opts,
+            self.rng)
         return iter_gen.get_iterable(literals)
 
     def make_class_function(self):
@@ -41,7 +46,7 @@ class ClassGenerator(FunctionGenerator):
     def make_loop(self, literals, class_var, m):
         loop_var = self.next_variable()
         iter = self.get_iterable(literals)
- 
+
         l = ForLoop(loop_var, iter)
 
         loop_literals = list(literals) + [loop_var]
@@ -49,7 +54,7 @@ class ClassGenerator(FunctionGenerator):
         args = [self.rng.choice(loop_literals) for i in m.args]
         if self.rng.random() < 0.5:
             func = class_var + '.' + m.name
-        else: # Sometimes copy the function into a variable
+        else:  # Sometimes copy the function into a variable
             func = self.next_variable()
             l.content.append(Assignment(func, '=', [class_var + '.' + m.name]))
 
@@ -69,7 +74,7 @@ class ClassGenerator(FunctionGenerator):
 
     def fill_some_arith(self, m):
         def low_numbers():
-            return str(self.rng.randint(-1,1))
+            return str(self.rng.randint(-1, 1))
 
         numbers = [gen_max_int_gen().set_rng(self.rng), low_numbers]
         exp = ArithGen(5, self.rng).generate(m.args + numbers)
@@ -110,11 +115,19 @@ class ClassGenerator(FunctionGenerator):
         self.make_fill(m_super)
 
         class_var = self.next_variable()
-        clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals))
+        clause = self.rng.choice(
+            list(
+                literals)) + " < " + self.rng.choice(
+                    list(
+                        literals))
         i = IfStatement(clause,
-            [Assignment(class_var, '=', [CallStatement(c, [])])],
-            [Assignment(class_var, '=', [CallStatement(c_super, [])])]
-        )
+                        [Assignment(class_var, '=', [CallStatement(c, [])])],
+                        [Assignment(
+                         class_var,
+                         '=',
+                         [CallStatement(c_super,
+                                        [])])]
+                        )
         result = [i]
 
         l = self.make_loop(literals, class_var, m)
@@ -132,16 +145,22 @@ class ClassGenerator(FunctionGenerator):
         self.make_fill(m_super)
 
         class_var = self.next_variable()
-        clause = self.rng.choice(list(literals)) + " < " + self.rng.choice(list(literals))
+        clause = self.rng.choice(
+            list(
+                literals)) + " < " + self.rng.choice(
+                    list(
+                        literals))
         i = IfStatement(clause,
-            [Assignment(class_var, '=', [CallStatement(c, [])])],
-            [Assignment(class_var, '=', [CallStatement(c_super, [])])]
-        )
+                        [Assignment(class_var, '=', [CallStatement(c, [])])],
+                        [Assignment(
+                         class_var,
+                         '=',
+                         [CallStatement(c_super,
+                                        [])])]
+                        )
         result = [i]
 
         l = self.make_loop(literals, class_var, m)
         result.append(l)
 
         return result
-
-

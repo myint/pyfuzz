@@ -1,13 +1,17 @@
 
 import inspect
 
+
 class InvalidArgException(Exception):
     pass
+
 
 class DispatchTargetException(Exception):
     pass
 
+
 class Dispatcher(object):
+
     '''General dispatcher object'''
     def __init__(self, name, argnum, args):
         self.name = name
@@ -27,15 +31,19 @@ class Dispatcher(object):
             if isinstance(arg, reg_arg):
                 return reg_func
 
-        raise InvalidArgException("No function found for type %s." % str(type(arg)))
+        raise InvalidArgException(
+            "No function found for type %s." %
+            str(type(arg)))
 
     def register(self, func, arg):
         '''Register a new function with the dispatcher'''
         args = inspect.getargspec(func)
         if args != self.args:
-            raise DispatchTargetException("Target arguments to not match with source.")
+            raise DispatchTargetException(
+                "Target arguments to not match with source.")
 
         self.functions.append((arg, func))
+
 
 def on(name):
     '''Dispatch on argument "name"'''
@@ -60,9 +68,3 @@ def on(name):
         return decorator
 
     return on_decorate
-
-
-
-
-
-

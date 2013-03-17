@@ -1,15 +1,15 @@
 from pygen.cgen import *
-from arithgen import ArithGen
-#from iterables import IterableGenerator
-import iterables
+from .arithgen import ArithGen
+# from iterables import IterableGenerator
+from . import iterables
 
 from utils import eval_branches, FunctionGenerator
 
 import pgen
 
 
-
 class ChangeGlobalGenerator(FunctionGenerator):
+
     """
     This generates some code to change a global
     and test if the changed function is executed.
@@ -19,7 +19,6 @@ class ChangeGlobalGenerator(FunctionGenerator):
         self.module = module
         self.rng = rng
         self.stats = stats
-
 
     def generate_globalon(self, opts):
         f = self.create_function([])
@@ -41,8 +40,6 @@ class ChangeGlobalGenerator(FunctionGenerator):
         f.content.append("del len")
         return f
 
-
-
     def generate(self, opts, args_num, globals):
         fon = self.generate_globalon(opts)
         foff = self.generate_globaloff(opts)
@@ -50,17 +47,20 @@ class ChangeGlobalGenerator(FunctionGenerator):
         self.module.content.insert(0, fon)
         self.module.content.insert(0, foff)
 
-        iter_gen = iterables.IterableGenerator(self.module, self.stats, self.opts, self.rng)
+        iter_gen = iterables.IterableGenerator(
+            self.module,
+            self.stats,
+            self.opts,
+            self.rng)
 
         if opts["numbers"]:
             numbers = []
-            for i in xrange(4):
+            for i in range(4):
                 gen = self.rng.choice(opts["numbers"])
                 gen.set_rng(self.rng)
                 numbers.append(gen())
         else:
             numbers = ["1", "2", "3", "4"]
-
 
         iter = iter_gen.get_iterable(numbers)
 
@@ -75,4 +75,3 @@ class ChangeGlobalGenerator(FunctionGenerator):
         )
 
         return f
-

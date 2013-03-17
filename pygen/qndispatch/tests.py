@@ -1,8 +1,10 @@
 import unittest
 
-import qndispatch
+from . import qndispatch
+
 
 class DispatchTest(unittest.TestCase):
+
     def testDispatchOn(self):
         class TestClass(object):
 
@@ -43,8 +45,5 @@ class DispatchTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
+    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
-
-
-

@@ -1,23 +1,24 @@
 from pygen.cgen import *
-from arithgen import ArithGen
+from .arithgen import ArithGen
+
 
 class FunWithIf(object):
 
     def __init__(self, literals):
         pass
 
-
     def gen(self):
         pass
 
 
 class FunWithFunctions(object):
+
     def __init__(self, variables, literals, rng):
         self.variables = variables
         self.literals = literals
 
         self.rng = rng
-        if self.rng == None:
+        if self.rng is None:
             import random
             self.rng = random.Random()
 
@@ -26,31 +27,37 @@ class FunWithFunctions(object):
 
         allfuncs = [f for f in funcs]
 
-        for i in xrange(nr):
+        for i in range(nr):
             f = Function(prefix + str(i), self.variables,
-                         [CallStatement(self.rng.choice(allfuncs), self.variables),
-                          CallStatement(self.rng.choice(allfuncs), self.variables),
-                          CallStatement(self.rng.choice(allfuncs), self.variables),
-#                          CallStatement(self.rng.choice(allfuncs), self.variables),
-                         ]
-                        )
+                         [CallStatement(
+                             self.rng.choice(allfuncs), self.variables),
+                          CallStatement(
+                          self.rng.choice(
+                          allfuncs),
+                          self.variables),
+                          CallStatement(
+                          self.rng.choice(
+                          allfuncs),
+                          self.variables),
+# CallStatement(self.rng.choice(allfuncs), self.variables),
+                          ]
+                         )
             newfuncs.append(f)
             allfuncs.append(f)
 
         return newfuncs
 
 
-
 class FunWithArith(object):
 
-    inplace_ops = ['+=', '-='] # '/=', '*='
+    inplace_ops = ['+=', '-=']  # '/=', '*='
 
     def __init__(self, variables, literals, rng):
         self.variables = variables
         self.literals = literals
 
         self.rng = rng
-        if self.rng == None:
+        if self.rng is None:
             import random
             self.rng = random.Random()
 
@@ -59,15 +66,18 @@ class FunWithArith(object):
 
         agen = ArithGen(binops, self.rng)
 
-        for i in xrange(nr):
-            line = [self.rng.choice(self.variables), self.rng.choice(self.inplace_ops)]
+        for i in range(nr):
+            line = [
+                self.rng.choice(
+                    self.variables),
+                self.rng.choice(
+                    self.inplace_ops)]
             line.append(agen.generate(self.literals))
 
             content.append(" ".join(line))
 
         content.append("return %s" % (self.rng.choice(self.variables),))
         return content
-
 
     def gen(self, name, nr, binops):
         f = Function("name", self.variables, self.gen_content(nr, binops))

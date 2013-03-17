@@ -1,6 +1,7 @@
 
 class IntegerGen(object):
-    def __init__(self, min_range, max_range, rng = None):
+
+    def __init__(self, min_range, max_range, rng=None):
         self.rng = rng
 
         self.min_range = min_range
@@ -14,22 +15,22 @@ class IntegerGen(object):
         return self
 
 
-
 def gen_max_int_gen():
     return IntegerGen(-2**31, 2**31)
 
+
 class ArithGen(object):
 
-    bin_ops = ['+', '-', '&', '^', '|'] #, '%', '/', '//', '*'
+    bin_ops = ['+', '-', '&', '^', '|']  # , '%', '/', '//', '*'
 
     def __init__(self, nr_bin_ops, rng):
         self.nr_bin_ops = nr_bin_ops
         self.rng = rng
-        if self.rng == None:
+        if self.rng is None:
             import random
             self.rng = random.Random()
 
-    def generate(self, literals = []):
+    def generate(self, literals=[]):
         self.bin_ops_left = self.nr_bin_ops
         return self.add_op(literals)
 
@@ -75,4 +76,3 @@ class ArithGen(object):
 
     def add_bracket(self, literals):
         return "".join(['(', self.add_op(literals), ')'])
-

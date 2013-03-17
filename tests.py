@@ -3,9 +3,12 @@ import unittest
 from pgen import *
 from utils import FunctionGenerator
 
+
 class TestUtilFunctions(unittest.TestCase):
+
     def testEvalBranches(self):
         class Random(object):
+
             def random(self):
                 return 0.9
 
@@ -13,6 +16,7 @@ class TestUtilFunctions(unittest.TestCase):
 
         result = eval_branches(rng, [(0.5, 0), (1.0, 1)])
         self.assertEqual(result, 1)
+
 
 class TestFunctionGenerator(unittest.TestCase):
 
@@ -67,9 +71,6 @@ class TestFunctionGenerator(unittest.TestCase):
         self.assertEqual(module.arg_number, 1)
 
 
-
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
+    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
-
-

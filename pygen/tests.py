@@ -1,6 +1,7 @@
 import unittest
 
-from cgen import *
+from .cgen import *
+
 
 class TestModule(unittest.TestCase):
 
@@ -12,13 +13,11 @@ class TestModule(unittest.TestCase):
         p = Module()
         p = self.fix.visit(p)
 
-
         self.assertEqual(self.gen.generate(p), '')
 
     def testEmptyMainModule(self):
         p = Module(main=True)
         p = self.fix.generate(p)
-
 
         code = self.gen.generate(p)
         self.assert_('__main__' in code)
@@ -41,7 +40,9 @@ class TestModule(unittest.TestCase):
 
         self.assert_('function' in self.gen.generate(p))
 
+
 class TestForLoop(unittest.TestCase):
+
     def setUp(self):
         self.gen = CodeGenerator()
         self.fix = FixGenerator()
@@ -50,24 +51,23 @@ class TestForLoop(unittest.TestCase):
         n = ForLoop("i", ["xrange(10)"], [])
         n = self.fix.generate(n)
 
-
         code = self.gen.generate(n)
         self.assert_("for i" in code)
         self.assert_("xrange(10):" in code)
         self.assert_("    pass" in code)
-
 
     def testStringForLoop(self):
         n = ForLoop("i", ["xrange(10)"], ['pass'])
         n = self.fix.generate(n)
 
-
         code = self.gen.generate(n)
         self.assert_("for i" in code)
         self.assert_("xrange(10):" in code)
         self.assert_("    pass" in code)
 
+
 class TestIfStatement(unittest.TestCase):
+
     def setUp(self):
         self.gen = CodeGenerator()
         self.fix = FixGenerator()
@@ -76,7 +76,6 @@ class TestIfStatement(unittest.TestCase):
         n = IfStatement("i", [])
         n = self.fix.generate(n)
 
-
         code = self.gen.generate(n)
         self.assert_("if i:" in code)
         self.assert_("pass" in code)
@@ -84,13 +83,14 @@ class TestIfStatement(unittest.TestCase):
         n = IfStatement("i", [], [])
         n = self.fix.generate(n)
 
-
         code = self.gen.generate(n)
         self.assert_("if i:" in code)
         self.assert_("pass" in code)
         self.assert_("else:" in code)
 
+
 class TestFunction(unittest.TestCase):
+
     def setUp(self):
         self.gen = CodeGenerator()
         self.fix = FixGenerator()
@@ -99,16 +99,16 @@ class TestFunction(unittest.TestCase):
         n = Function("test")
         n = self.fix.generate(n)
 
-
         code = self.gen.generate(n)
         self.assert_("def test" in code)
         self.assert_("pass" in code)
 
-
     def testFunction(self):
         class TestStatement(Statement):
+
             def get(self):
                 return "TestStatement"
+
             def fix(self):
                 return self.get()
 
@@ -119,7 +119,6 @@ class TestFunction(unittest.TestCase):
         n.content.append(TestStatement())
         n.content.append("StringStatement")
         n.content.append(CallableStatement)
-
 
         code = self.gen.generate(n)
 
@@ -145,6 +144,7 @@ class TestFunction(unittest.TestCase):
 
 
 class TestClass(unittest.TestCase):
+
     def setUp(self):
         self.gen = CodeGenerator()
         self.fix = FixGenerator()
@@ -189,6 +189,7 @@ class TestClass(unittest.TestCase):
 
 
 class TestCallStatement(unittest.TestCase):
+
     def setUp(self):
         self.gen = CodeGenerator()
         self.fix = FixGenerator()
@@ -203,7 +204,9 @@ class TestCallStatement(unittest.TestCase):
         self.assert_("test" in code)
         self.assert_("(arg1, arg2)" in code)
 
+
 class TestAssignment(unittest.TestCase):
+
     def setUp(self):
         self.gen = CodeGenerator()
         self.fix = FixGenerator()
@@ -223,7 +226,9 @@ class TestAssignment(unittest.TestCase):
 
         self.assert_("target = CallableStatement" in code)
 
+
 class TestFixGenerator(unittest.TestCase):
+
     def setUp(self):
         self.gen = FixGenerator()
 
@@ -236,8 +241,10 @@ class TestFixGenerator(unittest.TestCase):
 
     def testStatement(self):
         class TestStatement(Statement):
+
             def get(self):
                 return "a"
+
             def fix(self):
                 return "a"
 
@@ -246,8 +253,10 @@ class TestFixGenerator(unittest.TestCase):
 
     def testVisitArgs(self):
         class TestStatement(Statement):
+
             def get(self):
                 return "a"
+
             def fix(self):
                 return "a"
 
@@ -261,7 +270,6 @@ class TestFixGenerator(unittest.TestCase):
 
         fixed = self.gen.visit_args([['b']])
         self.assert_(isinstance(fixed[0], list))
-
 
 
 class TestCodeGenerator(unittest.TestCase):
@@ -281,6 +289,7 @@ class TestCodeGenerator(unittest.TestCase):
 
     def testStatement(self):
         class TestStatement(Statement):
+
             def get(self):
                 return "a"
 
@@ -300,7 +309,5 @@ class TestCodeGenerator(unittest.TestCase):
         self.assert_('c' in code)
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
+    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
-
-

@@ -1,3 +1,2 @@
 
-from qndispatch import on
-
+from .qndispatch import on

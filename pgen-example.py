@@ -1,3 +1,4 @@
+from __future__ import print_function
 from pgen import *
 import random
 
@@ -11,4 +12,4 @@ if __name__ == "__main__":
 
     cgen = CodeGenerator()
 
-    print cgen.generate(m)
+    print(cgen.generate(m))

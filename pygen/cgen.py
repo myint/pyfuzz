@@ -1,17 +1,28 @@
-import qndispatch as dispatch
+from . import qndispatch as dispatch
+
+
+try:
+    basestring
+except NameError:
+    basestring = str
+
 
 class CodeGenException(Exception):
     pass
 
+
 class CodeGenIndentException(CodeGenException):
     pass
+
 
 class NotImplementedException(Exception):
     pass
 
+
 class Module(object):
+
     '''Outermost Code block representing a Python Module. May include a main block'''
-    def __init__(self, main = False):
+    def __init__(self, main=False):
         self.has_main = main
         self.main_body = []
 
@@ -19,54 +30,64 @@ class Module(object):
 
 
 class ForLoop(object):
-    def __init__(self, pointer, iterable, content = None):
+
+    def __init__(self, pointer, iterable, content=None):
         self.pointer = pointer
         self.iterable = iterable
-        if content != None:
+        if content is not None:
             self.content = content
         else:
             self.content = []
 
 
 class IfStatement(object):
-    def __init__(self, clause, true_content = None, false_content = None):
+
+    def __init__(self, clause, true_content=None, false_content=None):
         self.clause = clause
-        if true_content != None:
+        if true_content is not None:
             self.true_content = true_content
         else:
             self.true_content = []
 
-        if false_content != None:
+        if false_content is not None:
             self.false_content = false_content
         else:
             self.false_content = []
 
+
 class Function(object):
-    def __init__(self, name, args = None, content = None):
+
+    def __init__(self, name, args=None, content=None):
         self.name = name
 
-        if args != None:
+        if args is not None:
             self.args = args
         else:
             self.args = []
 
-        if content != None:
+        if content is not None:
             self.content = content
         else:
             self.content = []
 
+
 class CallStatement(object):
+
     def __init__(self, func, args):
         self.func = func
         self.args = args
 
+
 class Assignment(object):
+
     def __init__(self, target, operator, expression):
         self.target = target
         self.operator = operator
         self.expression = expression
 
+
 class Statement(object):
+
     """Generic statement. To be overridden."""
 
     def get(self):
@@ -75,8 +96,10 @@ class Statement(object):
     def fix(self):
         raise NotImplementedException
 
+
 class Class(object):
-    def __init__(self, name, super = None, content = None):
+
+    def __init__(self, name, super=None, content=None):
         self.name = name
         if super:
             self.super = super
@@ -88,22 +111,24 @@ class Class(object):
         else:
             self.content = []
 
+
 class Method(object):
-    def __init__(self, name, args = None, content = None):
+
+    def __init__(self, name, args=None, content=None):
         self.name = name
 
         self.args = []
-        if args != None:
+        if args is not None:
             self.args = args
 
-        if content != None:
+        if content is not None:
             self.content = content
         else:
             self.content = []
 
 
-
 class FixGenerator(object):
+
     def __init__(self):
         pass
 
@@ -162,7 +187,7 @@ class FixGenerator(object):
     @visit.when(CallStatement)
     def visit(self, node):
         stmt = CallStatement(node.func,
-                    self.visit_args(node.args))
+                             self.visit_args(node.args))
 
         return stmt
 
@@ -206,10 +231,16 @@ class FixGenerator(object):
 
     @visit.when(Assignment)
     def visit(self, node):
-        stmt = Assignment(node.target, node.operator, self.visit_block(node.expression))
+        stmt = Assignment(
+            node.target,
+            node.operator,
+            self.visit_block(
+                node.expression))
         return stmt
 
+
 class CodeGenerator(object):
+
     def __init__(self):
         pass
 
@@ -219,7 +250,7 @@ class CodeGenerator(object):
 
     def code(self, depth, line):
         code = []
-        for i in xrange(depth):
+        for i in range(depth):
             code.append('    ')
         if isinstance(line, list):
             line = "".join(line)
@@ -266,7 +297,6 @@ class CodeGenerator(object):
         '''Generic visit function'''
         return []
 
-
     @visit.when(Statement)
     def visit(self, depth, node):
         return [self.code(depth, node.get())]
@@ -296,7 +326,6 @@ class CodeGenerator(object):
         content += self.visit_block(depth, node.content)
         return content
 
-
     @visit.when(IfStatement)
     def visit(self, depth, node):
         content = []
@@ -305,7 +334,6 @@ class CodeGenerator(object):
         content.append(self.code(depth, "else:"))
         content += self.visit_block(depth, node.false_content)
         return content
-
 
     @visit.when(Function)
     def visit(self, depth, node):
@@ -355,6 +383,8 @@ class CodeGenerator(object):
     def visit(self, depth, node):
         code = [node.target, node.operator]
         if(len(node.expression) > 0):
-            code += map(lambda x: x.strip(), self.visit_block(0, node.expression))
+            code += map(
+                lambda x: x.strip(),
+                self.visit_block(0,
+                                 node.expression))
         return [self.code(depth, " ".join(code))]
-
