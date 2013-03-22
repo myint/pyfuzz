@@ -1,6 +1,6 @@
 import unittest
 
-from pygen.cgen import *
+from pygen.cgen import CodeGenerator, FixGenerator, Method
 from .classes import ClassGenerator
 
 

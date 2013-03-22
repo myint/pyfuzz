@@ -1,4 +1,3 @@
-
 class IntegerGen(object):
 
     def __init__(self, min_range, max_range, rng=None):

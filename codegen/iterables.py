@@ -1,5 +1,4 @@
-
-from pygen.cgen import *
+from pygen.cgen import Assignment, CallStatement
 from .arithgen import ArithGen, IntegerGen, gen_max_int_gen
 from utils import eval_branches, FunctionGenerator
 

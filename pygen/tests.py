@@ -177,7 +177,7 @@ class TestClass(unittest.TestCase):
         self.assert_("(self)" in code)
         self.assert_("pass" in code)
 
-    def testEmptyMethod(self):
+    def testEmptyMethodWithAssignment(self):
         n = Method('test')
         n.content.append('x = 5')
         n = self.fix.generate(n)

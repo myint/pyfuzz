@@ -3,7 +3,6 @@ from pygen.cgen import Assignment, CallStatement
 from utils import FunctionGenerator
 
 
-
 class ChangeGlobalGenerator(FunctionGenerator):
 
     """This generates some code to change a global and test if the changed
