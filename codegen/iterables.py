@@ -15,11 +15,8 @@ class IterableGenerator(object):
         self.stats = stats
 
     def get_iterable(self, literals):
-        types = [(
-                 1.0,
-                 "xrange"),
-                 (1.0,
-                 "range")]  # iterables that dont require size
+        types = [(1.0,
+                  "range")]  # iterables that dont require size
         if self.stats.prog_size > 0:
             types = types + [(
                              1.0,
@@ -33,9 +30,6 @@ class IterableGenerator(object):
 
         if branch == "range":
             return ["range(%d)" % (self.rng.randint(1, 50))]
-
-        if branch == "xrange":
-            return ["xrange(%d)" % (self.rng.randint(1, 50))]
 
         if branch == "list_comp_gen":
             self.stats.prog_size -= 1

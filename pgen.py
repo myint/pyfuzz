@@ -38,7 +38,7 @@ pgen_opts = {
 
 }
 
-from pygen.cgen import *
+from pygen.cgen import Assignment, CallStatement, ForLoop, Module
 
 from utils import eval_branches
 
@@ -70,7 +70,7 @@ class ProgGenerator(object):
         while self.module_size > 0 or self.prog_size > 0:
             main = []
 
-            loop = ForLoop('i', ['xrange(%d)' % (lopts["mainloop"],)], main)
+            loop = ForLoop('i', ['range(%d)' % (lopts["mainloop"],)], main)
 
             if "children" in lopts:
                 branch = eval_branches(self.rng, lopts["children"])
@@ -83,20 +83,20 @@ class ProgGenerator(object):
                                    [CallStatement(f,
                                                   ['x',
                                                    'i'])]))
-                    main.append('print x,')
+                    main.append("print(x, end='')")
 
                     self.module.content.insert(0, f)
                 if branch == "arith_float":
                     main.append(Assignment('x', '=', ['5.0']))
-                    main.append('print x,')
+                    main.append("print(x, end='')")
 
-            self.module.main_body.append("print 'prog_size: %d'" %
+            self.module.main_body.append("print('prog_size: %d')" %
                                         (lopts["prog_size"] - self.prog_size,))
             self.module.main_body.append(
-                "print 'func_number: %d'" %
+                "print('func_number: %d')" %
                 (self.func_number,))
             self.module.main_body.append(
-                "print 'arg_number: %d'" %
+                "print('arg_number: %d')" %
                 (self.arg_number,))
             self.module.main_body.append(loop)
 
@@ -105,6 +105,8 @@ class ProgGenerator(object):
 
             self.module_size -= refill
             self.prog_size += refill
+
+        self.module.content.insert(0, 'from __future__ import print_function')
 
         return self.module
 
