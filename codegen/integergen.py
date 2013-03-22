@@ -1,4 +1,4 @@
-from pygen.cgen import *
+from pygen.cgen import Assignment, CallStatement, IfStatement, ForLoop
 from .arithgen import ArithGen
 
 from utils import eval_branches, FunctionGenerator
