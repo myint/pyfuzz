@@ -46,7 +46,7 @@ class Dispatcher(object):
 
 
 def on(name):
-    """Dispatch on argument "name""""
+    """Dispatch on argument "name"."""
     def on_decorate(func):
         args = inspect.getargspec(func)
         argnum = args.args.index(name)
