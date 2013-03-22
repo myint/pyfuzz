@@ -6,10 +6,8 @@ from utils import FunctionGenerator
 
 class ChangeGlobalGenerator(FunctionGenerator):
 
-    """
-    This generates some code to change a global
-    and test if the changed function is executed.
-    """
+    """This generates some code to change a global and test if the changed
+    function is executed."""
     def __init__(self, module, stats, opts, rng):
         self.opts = opts
         self.module = module

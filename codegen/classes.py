@@ -88,7 +88,7 @@ class ClassGenerator(FunctionGenerator):
         return branch(literals)
 
     def generate_monomorphic(self, literals):
-        """Generates a monomorphic callsite"""
+        """Generates a monomorphic callsite."""
         c, m = self.make_class_function()
 
         self.make_fill(m)
@@ -103,7 +103,7 @@ class ClassGenerator(FunctionGenerator):
         return result
 
     def generate_polymorphic(self, literals):
-        """Generate a polymorphic callsite"""
+        """Generate a polymorphic callsite."""
         c, m = self.make_class_function()
         c_super, m_super = self.make_class_function()
         m_super.name = m.name
@@ -135,7 +135,7 @@ class ClassGenerator(FunctionGenerator):
         return result
 
     def generate_duck(self, literals):
-        """Generate a duck typing callsite"""
+        """Generate a duck typing callsite."""
         c, m = self.make_class_function()
         c_super, m_super = self.make_class_function()
         m_super.name = m.name

@@ -8,9 +8,7 @@ import pgen
 
 class TailRecursionGenerator(FunctionGenerator):
 
-    """
-    This generates some code to test tail recursion handling.
-    """
+    """This generates some code to test tail recursion handling."""
     def __init__(self, module, stats, opts, rng):
         self.opts = opts
         self.module = module

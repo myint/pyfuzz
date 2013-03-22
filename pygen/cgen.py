@@ -21,7 +21,11 @@ class NotImplementedException(Exception):
 
 class Module(object):
 
-    '''Outermost Code block representing a Python Module. May include a main block'''
+    """Outermost Code block representing a Python Module.
+
+    May include a main block
+
+    """
     def __init__(self, main=False):
         self.has_main = main
         self.main_body = []
@@ -88,7 +92,11 @@ class Assignment(object):
 
 class Statement(object):
 
-    """Generic statement. To be overridden."""
+    """Generic statement.
+
+    To be overridden.
+
+    """
 
     def get(self):
         raise NotImplementedException
@@ -294,7 +302,7 @@ class CodeGenerator(object):
 
     @dispatch.on('node')
     def visit(self, depth, node):
-        '''Generic visit function'''
+        """Generic visit function."""
         return []
 
     @visit.when(Statement)

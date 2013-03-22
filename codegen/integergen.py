@@ -149,7 +149,7 @@ class ArithIntegerGenerator(FunctionGenerator):
             f.content.extend(result)
 
     def generate(self, opts, args_num, globals=[]):
-        '''Insert a new arithmetic function using only integers'''
+        """Insert a new arithmetic function using only integers."""
         args = self.generate_arguments(args_num)
 
         f = self.create_function(args)
@@ -202,7 +202,8 @@ class LoopIntegerGenerator(FunctionGenerator):
         return iter_gen.get_iterable(literals)
 
     def generate(self, opts, args_num, globals):
-        '''Insert a new function with a loop containing some integer operations'''
+        """Insert a new function with a loop containing some integer
+        operations."""
         args = self.generate_arguments(args_num)
 
         literals = set(args) | set(globals)
@@ -254,7 +255,7 @@ class IntegerClosureGenerator(FunctionGenerator):
         self.stats = stats
 
     def generate(self, opts, args_num, globals=[]):
-        '''Insert a new arithmetic function using only integers'''
+        """Insert a new arithmetic function using only integers."""
         args = self.generate_arguments(args_num)
 
         closure = self.create_function(args)

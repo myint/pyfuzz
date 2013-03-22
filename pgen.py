@@ -58,7 +58,7 @@ class ProgGenerator(object):
         return "var%d" % (nr, )
 
     def generate(self):
-        '''Instantiates a new module and fills it randomly'''
+        """Instantiates a new module and fills it randomly."""
         self.module = Module(main=True)
         self.func_number = 1
         self.arg_number = 1
@@ -111,7 +111,7 @@ class ProgGenerator(object):
         return self.module
 
     def arith_integer(self, opts, args_num, globals=[]):
-        '''Insert a new arithmetic function using only integers'''
+        """Insert a new arithmetic function using only integers."""
         gen = ArithIntegerGenerator(self.module, self, self.opts, self.rng)
         f = gen.generate(opts, args_num, globals)
 

@@ -63,9 +63,7 @@ class IterableGenerator(object):
 
 class YieldFunctionGenerator(FunctionGenerator):
 
-    """
-    Returns a generator which uses yield.
-    """
+    """Returns a generator which uses yield."""
     def __init__(self, module, stats, opts, rng):
         self.opts = opts
         self.module = module
@@ -73,7 +71,7 @@ class YieldFunctionGenerator(FunctionGenerator):
         self.stats = stats
 
     def generate_child(self, func, literals):
-        '''Insert a function call to calculate some numbers'''
+        """Insert a function call to calculate some numbers."""
         gen = pgen.ArithIntegerGenerator(
             self.module,
             self.stats,
@@ -90,7 +88,7 @@ class YieldFunctionGenerator(FunctionGenerator):
         func.content.append("yield %s" % (result, ))
 
     def generate(self, args_num, pliterals):
-        '''Returns a CallStatement'''
+        """Returns a CallStatement."""
 
         args = self.generate_arguments(args_num)
         f = self.create_function(args)
@@ -123,9 +121,7 @@ class YieldFunctionGenerator(FunctionGenerator):
 
 class ListComprehensionGenerator(FunctionGenerator):
 
-    """
-    Returns a listcomprehension either as a list or a generator.
-    """
+    """Returns a listcomprehension either as a list or a generator."""
     def __init__(self, module, stats, opts, rng):
         self.opts = opts
         self.module = module

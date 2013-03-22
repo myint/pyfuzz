@@ -12,7 +12,7 @@ class DispatchTargetException(Exception):
 
 class Dispatcher(object):
 
-    '''General dispatcher object'''
+    """General dispatcher object."""
     def __init__(self, name, argnum, args):
         self.name = name
         self.argnum = argnum
@@ -21,7 +21,7 @@ class Dispatcher(object):
         self.functions = []
 
     def get(self, args, kw):
-        '''Get function to dispatch to based on args and kw'''
+        """Get function to dispatch to based on args and kw."""
         if self.name in kw:
             arg = kw[self.name]
         else:
@@ -36,7 +36,7 @@ class Dispatcher(object):
             str(type(arg)))
 
     def register(self, func, arg):
-        '''Register a new function with the dispatcher'''
+        """Register a new function with the dispatcher."""
         args = inspect.getargspec(func)
         if args != self.args:
             raise DispatchTargetException(
@@ -46,7 +46,7 @@ class Dispatcher(object):
 
 
 def on(name):
-    '''Dispatch on argument "name"'''
+    """Dispatch on argument "name""""
     def on_decorate(func):
         args = inspect.getargspec(func)
         argnum = args.args.index(name)
