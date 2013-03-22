@@ -4,4 +4,4 @@
 *.swp
 *.orig
 pyfuzz-output.*.p*
-.coverage/
+.coverage
