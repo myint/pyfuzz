@@ -15,7 +15,7 @@ class ArithIntegerGenerator(FunctionGenerator):
         self.stats = stats
 
     def generate_statement(self, opts, f, gen, literals, numbers):
-        if opts["if"] > self.rng.random():
+        if opts['if'] > self.rng.random():
             result = self.next_variable()
 
             exp1 = gen.generate(list(literals) + numbers)
@@ -23,7 +23,7 @@ class ArithIntegerGenerator(FunctionGenerator):
 
             clause = self.rng.choice(
                 list(
-                    literals)) + " < " + self.rng.choice(
+                    literals)) + ' < ' + self.rng.choice(
                         list(
                             literals))
 
@@ -40,8 +40,8 @@ class ArithIntegerGenerator(FunctionGenerator):
             literals.add(result)
 
     def generate_child(self, opts, f, literals):
-        branch = eval_branches(self.rng, opts["children"])
-        if branch == "arith_integer":
+        branch = eval_branches(self.rng, opts['children'])
+        if branch == 'arith_integer':
             gen = ArithIntegerGenerator(
                 self.module,
                 self.stats,
@@ -57,7 +57,7 @@ class ArithIntegerGenerator(FunctionGenerator):
             f.content.append(call)
             literals.add(result)
 
-        if branch == ("arith_integer", "local"):
+        if branch == ('arith_integer', 'local'):
             gen = ArithIntegerGenerator(
                 self.module,
                 self.stats,
@@ -74,7 +74,7 @@ class ArithIntegerGenerator(FunctionGenerator):
             f.content.append(call)
             literals.add(result)
 
-        if branch == "loop_integer":
+        if branch == 'loop_integer':
             gen = LoopIntegerGenerator(
                 self.module,
                 self.stats,
@@ -91,7 +91,7 @@ class ArithIntegerGenerator(FunctionGenerator):
             f.content.append(call)
             literals.add(result)
 
-        if branch == "change_global":
+        if branch == 'change_global':
             gen = ChangeGlobalGenerator(
                 self.module,
                 self.stats,
@@ -107,7 +107,7 @@ class ArithIntegerGenerator(FunctionGenerator):
             f.content.append(call)
             literals.add(result)
 
-        if branch == "integer_closure":
+        if branch == 'integer_closure':
             gen = IntegerClosureGenerator(
                 self.module,
                 self.stats,
@@ -122,7 +122,7 @@ class ArithIntegerGenerator(FunctionGenerator):
             f.content.append(call)
             literals.add(result)
 
-        if branch == "tail_recursion":
+        if branch == 'tail_recursion':
             gen = TailRecursionGenerator(
                 self.module,
                 self.stats,
@@ -137,7 +137,7 @@ class ArithIntegerGenerator(FunctionGenerator):
             f.content.append(call)
             literals.add(result)
 
-        if branch == "classes":
+        if branch == 'classes':
             from . import classes
             gen = classes.ClassGenerator(
                 self.module,
@@ -158,21 +158,21 @@ class ArithIntegerGenerator(FunctionGenerator):
 
         children = min(
             self.rng.randint(0,
-                             opts["max_children"]),
+                             opts['max_children']),
             self.stats.prog_size)
         if children > 0:
             self.stats.prog_size -= children
             for i in range(children):
                 self.generate_child(opts, f, literals)
 
-        numbers = [n.set_rng(self.rng) for n in opts["numbers"]]
-        branch_type = eval_branches(self.rng, opts["type"])
-        if branch_type == "thin":
+        numbers = [n.set_rng(self.rng) for n in opts['numbers']]
+        branch_type = eval_branches(self.rng, opts['type'])
+        if branch_type == 'thin':
             gen = ArithGen(2, self.rng)
             for i in range(self.rng.randint(10, 25)):
                 self.generate_statement(opts, f, gen, literals, numbers)
 
-        if branch_type == "fat":
+        if branch_type == 'fat':
             gen = ArithGen(20, self.rng)
             for i in range(self.rng.randint(0, 5)):
                 self.generate_statement(opts, f, gen, literals, numbers)
@@ -207,7 +207,7 @@ class LoopIntegerGenerator(FunctionGenerator):
         args = self.generate_arguments(args_num)
 
         literals = set(args) | set(globals)
-        numbers = [n.set_rng(self.rng) for n in opts["numbers"]]
+        numbers = [n.set_rng(self.rng) for n in opts['numbers']]
 
         f = self.create_function(args)
 
@@ -221,13 +221,13 @@ class LoopIntegerGenerator(FunctionGenerator):
 
         l = ForLoop(loop_var, iter)
 
-        if opts["if"] > self.rng.random():
+        if opts['if'] > self.rng.random():
             exp1 = ArithGen(1, self.rng).generate(list(literals) + numbers)
             exp2 = ArithGen(1, self.rng).generate(list(literals) + numbers)
 
-            clause = " ".join(
+            clause = ' '.join(
                 [self.rng.choice(list(literals)),
-                             "<",
+                             '<',
                              self.rng.choice(list(literals))])
 
             i = IfStatement(clause,
@@ -241,7 +241,7 @@ class LoopIntegerGenerator(FunctionGenerator):
 
         f.content.append(Assignment(result, '=', ['0']))
         f.content.append(l)
-        f.content.append("return " + result)
+        f.content.append('return ' + result)
 
         return f
 
@@ -262,8 +262,8 @@ class IntegerClosureGenerator(FunctionGenerator):
 
         gen = self.create_function([])
 
-        if opts["numbers"]:
-            number_gen = self.rng.choice(opts["numbers"])
+        if opts['numbers']:
+            number_gen = self.rng.choice(opts['numbers'])
             number_gen.set_rng(self.rng)
             number = number_gen()
         else:
@@ -271,10 +271,10 @@ class IntegerClosureGenerator(FunctionGenerator):
 
         gen.content.extend(
             [
-                "closure = [%s]" % (number, ),
+                'closure = [%s]' % (number, ),
                 closure,
-                Assignment("func", "=", [closure.name]),
-                "return func",
+                Assignment('func', '=', [closure.name]),
+                'return func',
             ]
         )
 
@@ -284,7 +284,7 @@ class IntegerClosureGenerator(FunctionGenerator):
         self.module.content.insert(
             1,
             Assignment(c_var,
-                       "=",
+                       '=',
                        [CallStatement(gen,
                                       [])]))
 
@@ -293,15 +293,15 @@ class IntegerClosureGenerator(FunctionGenerator):
             self.stats,
             self.opts,
             self.rng)
-        f = gen_ai.generate(self.opts["arith_integer"], args_num, [])
+        f = gen_ai.generate(self.opts['arith_integer'], args_num, [])
 
         self.module.content.insert(0, f)
 
         closure.content.append(
-            Assignment("closure[0]",
-                       "+=",
+            Assignment('closure[0]',
+                       '+=',
                        [CallStatement(f,
                                       args)]))
-        closure.content.append("return closure[0]")
+        closure.content.append('return closure[0]')
 
         return c_var
