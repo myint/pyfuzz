@@ -42,7 +42,7 @@ from pygen.cgen import *
 
 from utils import eval_branches
 
-from codegen.integergen import LoopIntegerGenerator, ArithIntegerGenerator
+from codegen.integergen import ArithIntegerGenerator
 
 
 class ProgGenerator(object):
